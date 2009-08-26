@@ -1,0 +1,13 @@
+#TeXlipse project settings
+#Mon Aug 24 22:51:33 CEST 2009
+builderNum=2
+outputDir=
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=tmp
+mainTexFile=DA-Lei.tex
+outputFile=DA-Lei.pdf
+langSpell=en
+markDer=true
+srcDir=
