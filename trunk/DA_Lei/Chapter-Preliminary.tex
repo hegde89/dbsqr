@@ -1,0 +1,78 @@
+\chapter{Preliminary}\label{pre}
+
+In this chapter we firstly formalize the keyword search problem on data web in
+section~\ref{pre:ksdw}, where various models used throughout this thesis are discussed and defined.
+Section~\ref{pre:routing} introduces the problem of keyword query routing tackled by this thesis.\section{Problem Definition of Keyword Search on the Data Web}\label{pre:ksdw}
+
+As mentioned in section~\ref{intro:motivation}, in the data web search setting, answering keyword
+queries might involve multiple data sources. In addition, it is assumed that these data sources are
+not independent but interlinked by mappings. We elaborate on the problem of keyword search
+on data web in what follows. We will begin with a model for underlying data, and continue with the
+query and answer models followed by the scoring model. At last we will introduce the problem of
+keyword query routing for data web search based on the defined models.
+\subsection{Data, Query and Answer Models}
+
+\paragraph{Data Model}
+We consider the data web as a set of interrelated web data sources, each of them identified using a
+data source identifier. We use a graph-based data model to characterize individual web data sources.
+Since the structured data on the web varies greatly in their forms, such as XML data, relational data
+and RDF\footnote{\url{http://www.w3.org/RDF/}}, a framework for (Web) resource description
+standardized by the W3C, we will present a general data model that is sufficiently to capture all of
+them.
+\begin{definition}\label{def:datagraph}
+A \emph{data graph} $G$ is a tuple $(V,L,E)$ where
+\begin{itemize}
+  \item $V$ is a finite set of \emph{vertices}. Thereby, $V$ is
+  conceived as the disjoint union $V_E\uplus
+  V_C\uplus V_V$ with E-vertices $V_E$
+  (representing entities), C-vertices $V_C$
+  (classes), and V-vertices $V_V$ (data values).
+  \item $L$ is a finite set of \emph{edge
+  labels}, subdivided by $L = L_R \uplus L_A \uplus
+  \{type, subclass\}$, where $L_R$ represents
+  inter-entity edges and $L_A$ stands for
+  entity-attribute assignments. \item $E$ is a
+  finite set of \emph{edges} of the form
+  $e(v_1,v_2)$ with $v_1,v_2\in V$ and $e\in L$.
+  Moreover, the following restrictions apply:
+  \begin{itemize}
+    \item $e \in L_R$ if and only if $v_1, v_2 \in V_E$,
+    \item $e \in L_A$ if and only if $v_1 \in V_E$ and $v_2 \in V_V$,
+    \item $e = \mathit{type}$ if and only if $v_1 \in V_E$ and $v_2 \in V_C$, and
+    \item $e = \mathit{subclass}$ if and only if $v_1, v_2 \in V_C$.
+  \end{itemize}
+\end{itemize}
+\end{definition}
+To interrelate the elements of individual data sources, our data
+model is extended with mappings:
+
+\begin{definition} A \emph{mapping} $M$ is set of mapping assertions representing approximate
+correspondences between graph elements. Specifically, mapping assertions in $M$ are of the form
+$m(v_1,v_2, s)$ where $v_1,v_2 \in V$ are graph vertices  and $s \in [0,1]$ is a score denoting a
+confidence value associated with the mapping.
+\end{definition}
+
+Data sources together with mappings relating them form a \emph{data web} defined as an {\em integrated data graph}:
+
+\begin{definition} An \emph{integrated data graph} $g_{ID}$ is a tuple $(G_D,M_D)$, where $G_D$ is a
+finite set of data graphs and $M_D$ is a set of approximate correspondences between data elements
+called \emph{individual mappings}.
+\end{definition}
+While edges of a particular graph are called
+\emph{intra-data-source edges}, edges representing mappings
+between elements of different data graphs will be referred to as
+\emph{inter-data-sources edges}.
+
+\paragraph{Query Model}
+
+\paragraph{Answer Model}
+
+\subsection{Relevance Scoring Model}
+
+%content
+
+\section{Problem Definition of Keyword Query Routing}\label{pre:routing}
+
+As discussed in section~\ref{intro:motivation}, identifying the most relevant data sources to user
+keyword queries and directing the keywords to appropriate sources will be a key to our data websearch setting.
+
