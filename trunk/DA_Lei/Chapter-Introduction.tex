@@ -5,15 +5,14 @@ In recent years, with the advent and popularity of a vast amount of structured d
 Web, which is ever increasing rapidly, the Web as a global information space is no longer only a Web
 of documents, but a Web of data - {\em data web}. Currently, there are billions of triples stored in
 web data sources of different domains. These data sources become more tightly interrelated as the
-number of links in form of mappings is also growing. This development of a data web offer
+number of links in form of mappings is also growing. This development of a data web offers
 opportunities for addressing complex information needs. Besides searching for documents, the user can
 more specifically ask for the precise information using more expressive queries according to
 structured query languages. However, structured query language is too complicated for casual users,
 which hinders them in expressing their information need. As keyword search has been proven to be
 useful for document retrieval on the web, it is much easier to handle than structured query languages
-for casual users. The problem of keyword search on the data web has been studied in our previous work
-SearchWebDB \citep{TranTR}.
-
+for casual users. Therefore, the problem of keyword search on the data web has emerged as an
+important research topic, which has been studied in our previous work \citep{TranTR}.
 Unfortunately, the scale and the diversity of the data web brings about some new challenges. In this
 data web search setting, where a result containing all query keywords may span over some distinct
 data sources linked by mappings, we face the challenge of searching an often large space of potential
@@ -25,7 +24,7 @@ data sources. In most of the approaches that aim at the problem of keyword searc
 data in a single data source, the systems first map the keywords to the keyword elements containing
 any query keyword, then start the exploration from all keyword elements to find the results. In data
 web search setting, it is not feasible because the cost of exploration is too high. Futhermore, in
-many cases, even more keyword elements and corresponding data sources do not participate in any
+many cases, even many keyword elements and corresponding data sources do not participate in any
 result such that computations are largely wasted.
 Therefore, we would ideally like a solution where given an arbitrary user keyword query, we identify
 just the right data sources that are likely to have the results and direct the keywords in the query
