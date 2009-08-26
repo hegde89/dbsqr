@@ -36,7 +36,7 @@ Given a keyword query $K = \{k_1,k_2,\ldots,k_m\}$, we first retrieve the lists 
 (more precisely, the clustered virtual documents) associated with corresponding scores for each
 keyword pair according to the keyword index. Then, we adopt existing top-k algorithms to
 progressively identify the virtual documents in a descending order, where each virtual documents can
-generate one or more query routing plans. However, some virtual documents might correspond to the
+generate one or more query routing plans. However, some virtual documents might contribute to the
 same query routing plan, thus we maintain a heap of the query routing plans. When a new virtual
 document is found, if the corresponding query routing plans are already in the heap, the scores will
 be added to them, otherwise the new query routing plans will be inserted into the heap. This process
