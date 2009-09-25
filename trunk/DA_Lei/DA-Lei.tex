@@ -92,9 +92,13 @@
 
 }
 
-\newtheorem{definition}{Definition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
+
+\theoremstyle{plain} 
+\newtheorem*{problem}{The Problem of Keyword Query Routing}
 
 \begin{document}
 %
@@ -140,7 +144,7 @@
 \include{Chapter-Introduction}
 
 \include{Chapter-Preliminary}
-% 
+
 \include{Chapter-Integrated}
 
 \include{Chapter-Evaluation}

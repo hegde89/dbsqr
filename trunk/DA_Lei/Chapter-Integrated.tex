@@ -1,69 +1,423 @@
 \chapter{Keyword Query Routing for Data Web Search}\label{qr}
 
-In this chapter, we propose a novel \emph{virtual document} based approach to address the problem of
-keyword query routing for efficient keyword search on data web (see Section~\ref{pre:ksdw}). We
-develop an effective ranking mechanism by taking into account both IR-style relevance and structural
-compactness in order to select the most relevant data sources for a given keyword query and directe
-the keywords in the query to only the appropriate sources. In Section~\ref{qr:overview}, we present
-an overview of our approach. Section~\ref{qr:preprocessing} describes the offline process where the
-data are preprocessed to compute the virtual documents. We present the metrics to rank the data
-sources in section~\ref{qr:ranking}. At last, section~\ref{qr:queryprocess} introduces the query
-processing algorithm.
+In this chapter, we propose a novel approach to address the problem of keyword query routing for
+efficient keyword search on the data web. In Section~\ref{qr:problem}, we introduce the problem of
+keyword query routing in the data web search setting. Section~\ref{qr:preprocessing} describes the
+offline process of our approach where the data are preprocessed to construct the index. We present
+the metrics to rank the keyword routing plans in Section~\ref{qr:ranking}. At last,
+Section~\ref{qr:queryprocess} presents the query processing algorithm.
 
-\section{Overview of Our Approach}\label{qr:overview}
-We start with an overview of the different steps involved in the process of keyword query routing. We
-detail the different steps of our approach in following sections.
+\section{Problem Definition}\label{qr:problem}
 
-\paragraph{Preprocessing}
-Given the integrated data graph $G_{ID}$, we first identify all the maximal r-radius subgraphs.
-For each maximal r-radius subgraph, the keywords contained in it can be seen as a {\em virtual
-document}. Since these keywords might come from different data sources, for each keyword in a
-virtual document we track and store the corresponding data sources.
-After that we extract the keyword pairs (combinitions of two keywords) in all virtual documents and
-construct the {\em keyword index} which maps each keyword pair to the list of corresponding virtual
-documents that contain this keyword pair. Since we are interested in the top-k query routing
-plans, keyword pairs are associated with {\em scores}, which can be computed off-line and stored in the
-keyword index. The scoring functions take into account both IR-style and structural relevance.Intuitively, if a virtual document contains all keywords of a user query with high score, we candirect the keywords to corresponding data sources associated with them. 
-Note that if there are a large number of overlapped virtual documents, in other words, the virtual
-documents have many shared keywords, it might lead to low efficiency at the time of query processing
-due to the long list of virtual documents returned from the keyword index. We devise a quality-based
-clustering method to group the relevant virtual documents in the keyword index into clusters. This
-clustering process is keyword-sensitive and its goal is to minimize the number of keywords shared by
-different clusters of virtual documents and accordingly shorten the list of virtual documents in the
-keyword index. It is worth noting that this quality-based clustering method allows a trade-off
-between effectiveness and efficiency for query processing.\paragraph{Query Processing}
-Given a keyword query $\mathcal{K} = \{k_1,k_2,\ldots,k_{\left\vert\mathcal{K}\right\vert}\}$, we
-first retrieve the lists of virtual documents (more precisely, the clustered virtual documents)
-associated with corresponding scores for each keyword pair according to the keyword index. Then, we
-adopt existing top-k algorithms to progressively identify the virtual documents in a descending
-order, where each virtual documents can generate one or more query routing plans. However, some
-virtual documents might contribute to the same query routing plan, thus we maintain a heap of the
-query routing plans. When a new virtual document is found, if the corresponding query routing plans
-are already in the heap, the scores will be added to them, otherwise the new query routing plans will
-be inserted into the heap. This process continues until the top-k query routing plans have been
-achieved or no more virtual documents can be found.
+As discussed in Section~\ref{intro:motivation}, identifying the most relevant data sources to user
+keyword queries and forwarding the keywords to appropriate sources will be a key to our data web
+search setting. We observe that in this scenario the interconnected structures as answers might span
+over different data sources, where each of them contains partial keywords of a query. To formally
+describe the problem of keyword query routing, we first present several concepts as follows. At the
+beginning, to facilitate further discussion of our approach for keyword query routing, we give the
+definitions of {\em integrated data graph} and {\em integrated schema graph}:
+\begin{definition}[Integrated Data Graph] An \emph{integrated data graph} $G_{ID}$ is a tuple
+$(V,L,E)$ where
+\begin{itemize}
+  \item $V$ is a finite set of \emph{vertices}. Thereby, $V$ is conceived as the disjoint union
+  $V_E\uplus V_C$ with E-vertices $V_E$ (representing entities) and C-vertices $V_C$ (classes),
+  where each vertex belongs to a unique data source. 
+  \item $L$ is a finite set of \emph{edge labels}, subdivided by $L = L_R \uplus \{mapping\} \uplus
+  \{type\}$, where $L_R$ represents inter-entity relations, $\{mapping\}$ stands for entity  or class mappings and $\{type\}$ capture the class membership of an entity.  \item $E$ is a finite set of \emph{edges} of the form $e(v_1,v_2)$ with $v_1,v_2\in V$ and $e\in
+  L$, where:
+  \begin{itemize}
+    \item $e \in L_R$ if and only if $v_1, v_2 \in V_E$,
+    \item $e = \mathit{mapping}$ if and only if $v_1, v_2 \in V_E$ or $v_1, v_2 \in V_C$.
+    \item $e = \mathit{type}$ if and only if $v_1 \in V_E$ and $v_2 \in V_C$.  
+  \end{itemize}
+\end{itemize}
+\end{definition}
+
+Moreover, each E-vertex $v$ can be modeled as a keyword collection that contains a keyword $k$ when
+(1) an attribute value or the name of an attribute of the corresponding entity of $v$ contains $k$,
+(2) the name of the corresponding class of a C-vertex that connected with $v$ contains $k$, or
+(3) the name of the corresponding relation of an edge $e(v_1,v_2)$ contains $k$ where $e \in L_R$
+and $v = v_1$ or $v_2$.  
+
+\begin{definition}[Integrated Schema Graph] An \emph{integrated schema graph} $G_{IS}$ of an
+\emph{integrated data graph} $G_{ID} = (V,L,E)$ is a tuple $(V',L',E')$ with vertices $V' = V_C$,
+edge labels $L' = L_R \uplus \{mapping\}$ and edges $E'$ of the form $e(v_1,v_2)$ with $v_1, v_2 \in
+V'$ and $e \in L'$. In particular, every vertex $v' \in V'$ represents an aggregation of all the
+vertices $v \in V$ having the type $v'$, i.e., $v$ and $v'$ are connected by an type edge as
+$type(v,v')$ in $G_{ID}$. Accordingly, we have $e(v'_1,v'_2)\in E'$ if and only if there is an edge
+$e(v_1,v_2)\in E$ for some $v_1$ and $v_2$ that have the type $v'_1$ and $v'_2$, respectively.
+\end{definition}
+It is obvious that each C-vertex can be seen as a set of E-vertices, where every E-vertex represents
+an entity. For a C-vertex $v'$ and an E-vertex $v$, we use $v \in v'$ to denote that $v$ have the
+type $v'$, i.e., there exist an edge $type(v,v')$ in the integrated data graph $G_{ID}$. In the rest
+of this thesis, C-vertex(E-vertex) will be interchangeably employed instead of entity set(entity) if
+there is no ambiguity.
+\begin{definition}[Keyword Routing Plan] Given a set of data sources $\mathcal{DS} =
+\{ds_1,ds_2,\ldots,ds_{\left\vert\mathcal{DS}\right\vert}\}$ that together with mappings relating
+them form the data web and a keyword query $\mathcal{K} =
+\{k_1,k_2,\ldots,k_{\left\vert\mathcal{K}\right\vert}\}$, a mapping $\mu: \mathcal{K} \to
+\mathcal{DS}$ from all keywords in the query to the data sources will be called a \emph{keyword
+routing plan} $\mathcal{RP}$.
+\end{definition}
+Given a keyword query, we would like to find and rank the corresponding keyword routing plans based
+on their relevance to the query. Ideally, the relevance of a keyword routing plan to a given query
+can be measured as the total score of the results that can be generated by this keyword routing plan.
+However, in practice, it is not feasible to get the total score of results for each keyword routing
+plan, since it needs to execute the query over the whole data web. Thereby, it is necessary to put
+forward an efficient way to address this problem. In the following, we propose a novel method that
+summarizes the keyword relationships for efficiently finding the relevant keyword routing plans in
+the data web search scenario and develop an effective ranking mechanism to rank them.
+\begin{definition}[Candidate Entity Set Graph]\label{CG} Given a keyword query $\mathcal{K} =
+\{k_1,k_2,\ldots,k_{\left\vert\mathcal{K}\right\vert}\}$, a \emph{candidate entity set graph}
+$\mathcal{CG} = (V_{\mathcal{CG}},E_{\mathcal{CG}})$ is a complete graph with
+$\left\vert\mathcal{K}\right\vert$ vertices. For each query keyword $k_i \in \mathcal{K}$, there is a
+vertex $v''_i \in V_{\mathcal{CG}}$ represented as a combination of the query keyword and a C-vertex
+$\langle k_i,v'_i \rangle$, which denotes that at least one entity in the entity set $v'_i$ contains
+the keyword $k_i$. For each pair of vertices $v''_i(\langle k_i,v'_i \rangle)$ and $v''_j(\langle
+k_j,v'_j \rangle)$, there exists an edge $(v''_i,v''_j) \in E_{\mathcal{CG}}$ associated with the
+corresponding distances, which indicates that for every distance $dis$, there exists at least two
+entities that belong to entity set $v'_i$ and $v'_i$ and contain keywords $k_i$ and $k_j$,
+respectively, and they can be connected by a path at distance $dis$.
+\end{definition}
+It is clear that each candidate entity set graph can contribute to a unique keyword routing plan.
+For a candidate entity set graph $\mathcal{CG}$ and a keyword routing plan $\mathcal{RP}$, we use
+$\mathcal{CG} \in \mathcal{RP}$ to denote that candidate entity graph $\mathcal{CG}$ contributes to
+the keyword routing plan $\mathcal{RP}$. Therefore, in our approach, given a keyword query, we first
+achieve the relevant candidate entity set graphs associated with the relevance scores and then
+purchase the final keyword query routing plans by combining such candidate entity set graphs that
+contribute to the same plan.\begin{definition}[Candidate Entity Set Connection] Given a keyword pair $\langle k_1,k_2\rangle$, a
+\emph{candidate entity set connection} $\mathcal{CC}$ of this two keywords combination is a pair of
+C-vertices associated with corresponding distances of the form $\langle
+v'_1,v'_2,(dis_1,\ldots,dis_n)\rangle$, where for each distance $dis_i$ there exist at least a path
+at distance $dis_i$ form an E-vertex $v_1$, which has the type $v'_1$ and contains the keyword $k_1$,
+to an E-vertex $v_2$, which has the type $v'_2$ and contains the keyword $k_2$, in the integrated
+data graph $G_{ID}$.
+\end{definition}
+The candidate entity set connections for each keyword pair can be computed offline during data
+preprocessing discussed in Section~\ref{qr:preprocessing} and then it can be employed to construct
+the candidate entity set graphs during query processing discussed in Section~\ref{qr:queryprocess}.
+
+We now formally state the problem of keyword query routing in the data web search scenario. 
+\begin{problem}
+Given an integrated data graph $G_{ID}$ and a keyword query $\mathcal{K}$, the problem of keyword
+query routing is to find the top-$k$ keyword routing plans based on their relevance to the keyword
+query $\mathcal{K}$.
+\end{problem}
 \section{Data Preprocessing}\label{qr:preprocessing}
 
-%content
+In order to perform query processing for producing the top-$k$ keyword routing plans in an efficient
+way, we preprocess the underlying data to compute the candidate entity set connections for all
+keyword pairs and devise an extended inverted index to maintain them.
+For this offline indexing process, three steps need to be performed. Initially, we compute the
+relationships between entities in the integrated data graph at various distances. In the second step,
+based on the relationships of entities at different distances, we extract the connected term pairs
+associated with the entities containing them. Finally, given the obtained term pairs, the associated
+entities are clustered based on an aggregation rule to construct the candidate entity set connections
+and then they will be stored in an extended inverted index. The following subsections will describethese three steps of data preprocessing respectively. 
+\subsection{Entity Relationships Computation}
 
-\subsection{Computation of Virtual Documents}\label{qr:vdcompute}
+For entity relationships computations, we model the connections of entities at various distances $d$
+as $n\times n$ symmetric boolean matrices $\mathcal{R}(d)$  with respect to integrated data graph
+$G_{ID}$, where $n$ is the total number of E-vertices in $G_{ID}$, in other words, $n$ is the total
+number of entities in all data sources. In $\mathcal{R}(d)$, the element $r^d_{ij}$ is 1, iff, there
+is an path between $v_i$ and $v_j$ at distance $d$ composed of the edges that represent inter-entity
+relation or entity mapping in $G_{ID}$, where $v_i$($v_j$) denotes the E-vertex at i-th(j-th) row or
+column in $\mathcal{R}(d)$; otherwise, $r^d_{ij}$ is 0. In general, users are interested in the
+compact interconnected structures that contain the query keywords, thus a long path that connects two
+keyword elements might make no sense for the information need of the users. We provide a threshold
+$d_{max}$ to constrain the range of the distance and only the relationships of entities at distance
+$d \leq d_{max}$ are considered. The matrix $\mathcal{R}(1)$, illustrated as,\[\mathcal{R}(1) = (r^1_{ij})_{n \times n} = \begin{Bmatrix} 
+     \quad & \quad & v_1 & v_2 & \cdots & v_n & \quad\\ 
+     \quad & v_1 & 0 & 1 & \cdots & 1 & \quad\\ 
+     \quad & v_2 & 1 & 0 & \cdots & 0 & \quad\\ 
+     \quad & \vdots & \vdots & \quad \\
+     \quad & v_n & 1 & 0 & \cdots & 0 & \quad\\ 
+\end{Bmatrix}\]represents the direct connection of every E-vertex pair by an edge denoting inter-entity relation or
+entity mapping in $G_{ID}$. If there exist an edge $e(v_i,v_j)$ in $G_{ID}$, the corresponding entry
+$r^1_{ij}$ is 1; otherwise, $r^1_{ij}$ is 0. For $1 < d \leq d_{max}$, the matrix $\mathcal{R}(d)$
+can be constructed iteratively using the following formula, 
+\[\mathcal{R}(d) = (r^d_{ij})_{n \times n} = \mathcal{R}(d-1) \times \mathcal{R}(1)\] which
+represents the connection of every E-vertex pair through a path at distance $d$ in $G_{ID}$.
+\subsection{Connected Terms and Entity Connections Extraction}
 
-%content
+In this step, we first extract the terms of all E-vertices and then a lexical analysis (stemming,
+removal of stop words) will be performed on them. Note that the E-vertices contain two types of
+terms. The first type is terms that are matched with attribute values, and we call them \emph{value
+terms}. The second type is terms that are matched with the name of class, attributes and relations,
+and we call them \emph{schema terms}. For the \emph{schema terms}, a semantical analysis are
+performed on them, where semantically similar entries such as synonyms, hyponyms and hypernyms are
+extracted from WordNet\footnote{\url{http://wordnet.princeton.edu/}} \citep{wordnet} andincorporated in the corresponding E-vertices.
+After that, based on the relationships of entities at various distances, all term pairs contained
+either in the connected entities or the same entities will be extracted. For each pair of terms
+$\langle t_i,t_j \rangle$, if there exist two E-vertices $v_i$ and $v_j$ that contain the $k_i$ and
+$k_j$ respectively and the entry $r^d_{ij}$ of $\mathcal{R}(d)$ is 1, we create a tuple $\langle
+v_i,v_j,d \rangle$ that we call an \emph{entity connection} of $\langle t_i,t_j \rangle$. In
+particular, for the pair of terms $\langle t_i,t_j \rangle$ that can be contained in the same
+E-vertex $v$, the \emph{entity connection} $\langle v,v,0 \rangle$ will be created. Such entity
+connections are linked with the references of corresponding term pairs.
+Ideally, given a keyword query $\mathcal{K}
+=\{k_1,k_2,\ldots,k_{\left\vert\mathcal{K}\right\vert}\}$, we can retrieve the entity connections
+$\langle v_i,v_j,d \rangle$ for each keyword pair $\langle k_i,k_j \rangle$, and then find the
+\emph{candidate entity graphs} based on the obtained entity connections. In the \emph{candidate
+entity graph}, every vertex can be represented as an E-vertex $v_i$ containing one keyword $k_i$ of
+the given query. Furthermore, the \emph{candidate entity graph} is complete, i.e., between each pair
+of E-vertices $\langle v_i,v_j \rangle$, there is an edge which indicates that $v_i$ and $v_j$ can be
+connected by a path or they are the same vertex in the integrated data graph $G_{ID}$. Obviously,
+every \emph{candidate entity graph} might correspond to one or more answers of the keyword search on
+the data web. In particular, if the intermediate elements, namely the vertices and edges in the
+integrated data graph $G_{ID}$, between the vertices in the \emph{candidate entity graphs} forming
+the connecting paths are figured out, then the interconnected structures as the answers of the
+keyword query can be constructed. Hence, in this way, the keyword routing plans can be achieved from
+such \emph{candidate entity graphs}. However, it might be too expensive to process the entity
+connections for finding the \emph{candidate entity graphs} due to the large size of entities in the
+integrated data graph $G_{ID}$ and accordingly perhaps a large number of entity connections for some
+keyword pairs. Therefore, in our approach, such entity connections will be clustered to get the
+entity set connections discussed in the next step.
+\subsection{Entity Set Connections Construction and Indexing}
+In the final phase of data preprocessing, the obtained entity connections in the previous phase are
+clustered to get the entity set connections and then such entity set connections will be stored in
+the index.
+For each term pair $\langle t_i,t_j \rangle$, the corresponding entity connections $\langle
+v_i,v_j,dis \rangle$ are aggregated to the entity set connections $\langle
+v'_i,v'_j,(dis_1,\ldots,dis_n) \rangle$, when E-vertices $v_i$ and $v_j$ are connected with
+C-vertices $v'_i$ and $v'_j$ by $type$ edge in the integrated data graph $G_{ID}$, respectively. In
+addition, the distance $dis$ in the entity connections $\langle v_i,v_j,dis \rangle$ will be added
+into the corresponding entity set connections $\langle v'_i,v'_j,(dis_1,\ldots,dis_n) \rangle$. For
+each distance, we track and store the number of entity connections that collapsed during the
+clustering. We call such number \emph{entity connection frequency} that will be used for scoring.
+Note that if there is no C-vertex that is connected with E-vertex $v_i$(or $v_j$) in the integrated
+data graph $G_{ID}$ and given that $v_i$(or $v_j$) belongs to the data source $ds_i$(or $ds_j$), the
+corresponding $v'_i$(or $v'_j$) will be assigned as a special C-vertex $v^*_{ds_i}$(or $v^*_{ds_j}$)
+called \emph{top class} of data source $ds_i$(or $ds_j$)  that represents the aggregation of all the
+E-vertices in the data source $ds_i$(or $ds_j$) with no given type.
+We employ an extended inverted index, as depicted in Table \ref{index}, to maintain the entity set
+connections, where the entries of such index are term pairs(combinations of two keywords) and the
+values of each entry are corresponding entity set connections and the associated scores. The
+computation of such scores will be discussed in Section \ref{qr:ranking}. Given a keyword query
+$\mathcal{K} = \{k_1,k_2,\ldots,k_{\left\vert\mathcal{K}\right\vert}\}$, we first retrieve the entity
+set connections for each keyword pair $\langle k_i,k_j \rangle$ according to the index, and then
+based on them the candidate entity set graphs are constructed which will be discussed in
+Section~\ref{qr:queryprocess}. Finally, the top-$k$ keyword routing plans can be achieved from such
+candidate entity set graphs associated with scores.
 
-\subsection{Virtual Documents Clustering}\label{qr:vdcluster}
-
-%content
-
+{\tiny
+\begin{table}[tbp]
+\centering
+\begin{tabular}{|l||l|}
+\hline
+\textbf{Term Pair} & \textbf{Indexed Structure} \\
+\hline
+\hline
+$\langle term_i,term_j \rangle$  & [$\langle v'_i,v'_j,(dis_1,\ldots,dis_n) \rangle,score$] \\
+\hline
+\end{tabular}
+\caption{Indexing Entity Set Connections} \label{index}
+\end{table}
+}
 \section{Ranking Functions}\label{qr:ranking}
 
-%content
+Since we are interested in only the top-$k$ keyword query routing plans, in this section, we propose
+a novel ranking mechanism for ranking keyword routing plans based on some scoring functions. The
+scoring of answers with respect to keyword search on the structured data has been extensively
+discussed, see \citep{DBLP:conf/icde/BhalotiaHNCS02, DBLP:conf/sigmod/HeWYY07,
+DBLP:conf/vldb/HristidisP02, DBLP:conf/vldb/HristidisGP03, DBLP:conf/sigmod/LiuYMC06,
+DBLP:conf/sigmod/LuoLWZ07, DBLP:conf/icde/TranWRC09}. In the following, we introduce several new
+scoring functions that aim to assess the relevance of the keyword routing plans to the given keyword
+query.
+
+The basic idea of our ranking method is that we first assign each candidate entity set graph a score
+and then the score of a keyword routing plan will be computed from the individual scores of candidate
+entity set graphs that contribute to this keyword routing plan by using a score aggregation function.
+For scoring the candidate entity set graphs, the relevance of both vertices and edges of such graphs,
+in regard to keyword coverage and structure coverage respectively, will be taken into account. As is
+well known, the \mbox{TF-IDF} model has proven to be an effective measure for ranking textual
+documents in the context of document retrieval. By adopting this notion, we define some new metrics
+to measure the relevance of vertices and edges of the candidate entity set graphs with respect to the
+given keyword query.
+\subsection{Scoring of Graph Vertices}
+
+Analogous to term frequency $tf$ and inverse document frequency $idf$ in the \mbox{TF-IDF} model for
+ranking documents, we define the entity frequency $ef$ and inverse entity set frequency $icf$ for the
+given keyword $k_i$, where $ef_{k_i}$ denotes the frequency of entities that contain $k_i$ in a
+entity set and $icf_{k_i}$, as illustrated in Equation \ref{icf},  can be seen as a measure for
+distinctiveness of the keyword $k_i$ with respect to the entity sets. $N_C$ and $cf_{k_i}$ in
+Equation \ref{icf} respectively denote the number of entity sets on the data web and the number of
+entity sets that $k_i$ occurs.
+
+\begin{equation}\label{icf}
+icf_{k_i} = \ln\frac{N_C+1}{cf_{k_i}}
+\end{equation}
+
+We combine the two parameters $ef$ and $icf$ to evaluate the relevance of each vertex $v'_i$
+corresponding to the query keyword $k_i$ in a given candidate entity set graph $\mathcal{CG}$,
+denoted as $\textsc{Score}_{V}(k_i,\mathcal{CG})$, as formalized in Equation \ref{SVertex}. As noted
+in Definition \ref{CG}, for each query keyword $k_i$, the corresponding vertex $v'_i$ in the
+candidate entity set graph $\mathcal{CG}$ represents an entity set in which at least one entity
+contains the $k_i$. In Equation \ref{SVertex}, we use $ef_{k_i}$ to denote the frequency of entities
+that contain the keyword $k_i$, in other words, the number of entities where the keyword $k_i$
+occurs, in $\mathcal{CG}$.
+\begin{equation}\label{SVertex}
+\textsc{Score}_{V}(k_i,\mathcal{CG}) =
+ef_{k_i} * icf_{k_i} 
+% = ef_{k_i} * \ln\frac{N_C+1}{cf_{k_i}}
+\end{equation}
+
+Based on the relevance of each vertex $v'_i$ corresponding to the query keyword $k_i$ in
+$\mathcal{CG}$, we compute the overall score of the vertices in $\mathcal{CG}$ by summing up
+$\textsc{Score}_{V}(k_i,\mathcal{CG})$, as shown in Equation \ref{SVertices}.
+
+\begin{equation}\label{SVertices}
+\textsc{Score}_{V}(\mathcal{K},\mathcal{CG}) =
+\sum_{k_i \in \mathcal{K}} \textsc{Score}_{V}(k_i,\mathcal{CG})
+\end{equation}
+$\textsc{Score}_{V}(\mathcal{K},\mathcal{CG})$ measures the overall relevance between the keyword
+query $\mathcal{K}$ and the candidate entity set graph $\mathcal{CG}$ in respect of keyword coverage.
+However, it is not sufficient to consider only the factor of keyword coverage, because the answers
+of keyword search on the data web involve rich structural relationships, which are even more important
+in some cases. Therefore, it is essential to incorporate the scoring functions in respect of
+structure relationship. \subsection{Scoring of Graph Edges}
+
+In the similar way to scoring of graph vertices, we define the entity connection frequency $ecf$ and
+inverse entity set connection frequency $iccf$ for the given keyword pair $\langle k_i,k_j \rangle$,
+where $ecf_{\langle k_i,k_j \rangle}$ denotes the frequency of entity connections for $\langle
+k_i,k_j \rangle$ in a entity set connection and $iccf_{\langle k_i,k_j \rangle}$, as illustrated in
+Equation \ref{iccf}, can be seen as a measure for distinctiveness of the connected keyword pair
+$\langle k_i,k_j \rangle$ with respect to the entity set connections. $N_{CC}$ and $ccf_{\langle
+k_i,k_j \rangle}$ in Equation \ref{iccf} respectively denote the number of entity set connections for
+all connected keyword pairs on the data web and the number of entity set connections for the keyword
+pair $\langle k_i,k_j \rangle$.
+\begin{equation}\label{iccf}
+iccf_{\langle k_i,k_j \rangle} = \ln\frac{N_{CC}+1}{ccf_{\langle k_i,k_j \rangle}}
+\end{equation}
+
+Furthermore, it is noted that, for each entity connection $\langle v_i,v_j,d \rangle$, where $d$
+represents the length of the path connecting $v_i$ and $v_j$, when $d$ is larger, the structural
+relevance of $v_i$ and $v_j$ is smaller. Therefore, we introduce a function of $d$  $\varphi_d$ that
+measures the impact of $d$ to scoring of the candidate entity set graph edges. It is clear that
+$\varphi_d$ should be a monotonically decreasing function with respect to increasing $d$. In our
+approach, we define $\varphi_d$ in Equation \ref{fd}.
+
+\begin{equation}\label{fd} 
+\varphi_d = \frac{1}{d+1}
+\end{equation}
+
+We combine the three parameters $ecf$, $iccf$ and $\varphi_d$ to evaluate the relevance of each edge
+$(v'_i,v'_j)$ corresponding to the query keyword pair $\langle k_i,k_j \rangle$ in a given candidate
+entity set graph $\mathcal{CG}$, denoted as $\textsc{Score}_{E}(\langle k_i,k_j
+\rangle,\mathcal{CG})$, as formalized in Equation \ref{SEdge}. As noted in Definition \ref{CG}, for
+each query keyword pair $\langle k_i,k_j \rangle$, the corresponding edge $(v'_i,v'_j)$ in the
+candidate entity set graph $\mathcal{CG}$ represents an entity set connection $\langle
+v'_i,v'_j,(d_1,\ldots,d_n)$ in which for each distance $d_i$ there exists at least one entity
+connection $\langle v_i,v_j,d_i \rangle$ where $v_i$ and $v_j$ belong to entity set $v'_i$ and $v'_j$
+and contain keywords $k_i$ and $k_j$, respectively, and they can be connected by a path at distance
+$d_i$. In Equation \ref{SEdge}, we use $ecf_{\langle k_i,k_j \rangle}(d)$ to denote the frequency of
+entity connections, namely the number of entity connections, of distance $d$ for the keyword pair
+$\langle k_i,k_j \rangle$ in $\mathcal{CG}$.\begin{eqnarray}\label{SEdge}
+\textsc{Score}_{E}(\langle k_i,k_j \rangle,\mathcal{CG}) =
+\sum_{d}\varphi_d * ecf_{\langle k_i,k_j \rangle}(d) * iccf_{\langle k_i,k_j \rangle}
+% \nonumber\\ =
+% \sum_{d}\frac{1}{d+1} * ecf_{\langle k_i,k_j \rangle}(d) * \ln\frac{N_{CC}+1}{ccf_{\langle
+% k_i,k_j \rangle}}
+\end{eqnarray}Based on the relevance of each edge $(v'_i,v'_j)$ corresponding to the query keyword pair $\langle
+k_i;k_j \rangle$ in $\mathcal{CG}$, we compute the overall score of the edges in $\mathcal{CG}$ by
+summing up $\textsc{Score}_{E}(\langle k_i,k_j \rangle,\mathcal{CG})$, as shown in Equation
+\ref{SEdges}.
+\begin{equation}\label{SEdges}
+\textsc{Score}_{E}(\mathcal{K},\mathcal{CG}) =
+\sum_{\{k_i,k_j\} \subseteq \mathcal{K},i\neq j} \textsc{Score}_{E}(\langle k_i,k_j
+\rangle,\mathcal{CG})
+\end{equation}
+
+$\textsc{Score}_{E}(\mathcal{K},\mathcal{CG})$ measures the overall relevance between the keyword
+query $\mathcal{K}$ and the candidate entity set graph $\mathcal{CG}$ in respect of structure
+relationship.
+\subsection{Scoring of Keyword Routing Plan}
+
+% \begin{equation}\label{}
+% \textsc{Score}(\mathcal{K},\mathcal{CG}) = \textsc{Score}_{V}(\mathcal{K},\mathcal{CG}) *
+% \textsc{Score}_{E}(\mathcal{K},\mathcal{CG})
+% \end{equation}
+
+By taking into consideration the relevance with respect to both the keyword coverage and the
+structure relationship, we integrate the two scores, $\textsc{Score}_{V}(\mathcal{K},\mathcal{CG})$
+(Equation \ref{SVertices}) and $\textsc{Score}_{E}(\mathcal{K},\mathcal{CG})$ (Equation \ref{SEdges})
+to score the overall relevance between the keyword query $\mathcal{K}$ and the candidate entity set
+graph $\mathcal{CG}$, denoted as $\textsc{Score}(\mathcal{K},\mathcal{CG})$, as described in
+Equation \ref{SGraph}, where $\alpha$ and $\beta$ are tunable weighting parameters.
+\begin{equation}\label{SGraph}
+\textsc{Score}(\mathcal{K},\mathcal{CG}) = \alpha\textsc{Score}_{V}(\mathcal{K},\mathcal{CG}) +
+\beta\textsc{Score}_{E}(\mathcal{K},\mathcal{CG})
+\end{equation}
+
+Thereafter, the score of a keyword routing plan can be computed from the individual scores of all
+candidate entity set graphs that contribute to this keyword routing plan by using a score aggregation
+function, $\mathtt{SUM}$ in our approach. Additionally, given a keyword query, we observe that the
+answers which span over less data sources are more likely match the information need of the users due
+to the uncertainty of the mappings by which the data sources are interlinked. Based on this
+observation, we assume that the keyword routing plans involved in less data sources are preferred.
+Therefore, given a keyword routing plan $\mathcal{RP}$, we introduce a function
+$\kappa_{\mathcal{RP}}$ with respect to the number of data sources that $\mathcal{RP}$ involved in,
+denoted as $\left\vert{DS}_{\mathcal{RP}}\right\vert$, to scoring of the keyword routing plan
+$\mathcal{RP}$. We propose to set $\kappa_{\mathcal{RP}}$ as Equation \ref{nds}.
+\begin{equation}\label{nds}
+\kappa_{\mathcal{RP}} = \frac{1}{\left\vert{DS}_{\mathcal{RP}}\right\vert}
+\end{equation}
+
+Finally, we present the function for scoring keyword routing plan $\mathcal{RP}$ with respect to
+keyword query $\mathcal{K}$ as given in Equation \ref{SPlan}.
+\begin{equation}\label{SPlan}
+\textsc{Score}(\mathcal{K},\mathcal{RP}) =
+\kappa_{\mathcal{RP}} * \sum_{\mathcal{CG} \in \mathcal{RP}}\textsc{Score}(\mathcal{K},\mathcal{CG})
+\end{equation}
 
 \section{Query Processing}\label{qr:queryprocess}
 
-%content
+\begin{algorithm}[tb]\label{alg:queryplan}
+ 	\SetLine \linesnumbered \caption{Candidate Entity Set Graph Computation}
+ 	\KwIn{$K = (k_1,\ldots,k_{\left\vert K \right\vert})$.}
+	\KwData{$DC = (LC_1,\ldots,LC_{(\left\vert K \right\vert - 1)\left\vert K \right\vert/2})$, where
+	$LC_i = (CC_{i1},\ldots,CC_{i\left\vert LC_i \right\vert})$ with corresponding keyword pair as
+	$\langle k_{i1},k_{i2}\rangle$ and $CC_{ij}$ represents a candidate entity set connection of
+	$\langle k_{i1},k_{i2}\rangle$; 
+	$LC = (v_1,\ldots,v_{\left\vert LD \right\vert})$, where $v_i$ represents a C-vertex; 
+	$LG = (CG_1,\ldots,CG_{\left\vert LG\right\vert})$ where $CG_i$ represents a candidate entity set	graph.}	\KwResult{set of candidate entity set graphs}
+	
+ 	\SetKwFunction{retrieveComb}{retrieveCCs}
+ 	\SetKwFunction{minCombList}{minCCList}
+ 	\SetKwFunction{NextCandidateKeyword}{pickKeyword}
+ 	\SetKwFunction{NextCandidate}{EntitySetList}
 
-\section{Implementation}\label{qr:implementation}
+ 	\ForEach{keyword pair $\langle k_i,k_j\rangle$ where $k_i,k_j \in K$ and $i \neq j$} {
+ 		$DC$.add(\retrieveComb{$\langle k_i,k_j\rangle$})\;
+ 	}
+ 	
+ 	$LC \leftarrow$ \minCombList{$DC$}\;
+	$K \leftarrow K \setminus \{LC.k_1,LC.k_2\}$\;
+ 	
+ 	\ForEach{$C_i \in LC$}{
+		$CG \leftarrow (\langle LC.k_1,CC_i.v_1\rangle,\langle LC.k_2,CC_i.v_2\rangle)$\;
+ 		$LG$.add($CG$)\;
+ 	}
 
-%content
+ 	\While{$LG \neq \emptyset$ and $K \neq \emptyset$}{
+		$k \leftarrow$ \NextCandidateKeyword{$K$}\;
+	    $K \leftarrow K \setminus \{k\}$\;
+		$LG' \leftarrow \emptyset$\; 
+		\ForEach{$CG \in LG$}{
+			\ForEach{$\langle k_i,v_i\rangle \in CG$}{
+				$LC_i \leftarrow$ \NextCandidate{$k_i,k,v_i$}\;
+			}
+			$LC \leftarrow$ mergeAll($LC_i$)\;
+			\ForEach{$v \in LC$}{
+				$CG' \leftarrow CG$\;
+				$CG'$.add($\langle k,v\rangle$)\;
+				$LG'$.add($CG'$)\;
+			}
+		}
+		$LG \leftarrow LG'$\;
+ 	}
+	\Return $LG$\;
+ 
+\end{algorithm}
 
 
