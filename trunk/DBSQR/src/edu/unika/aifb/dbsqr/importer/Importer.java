@@ -1,26 +1,24 @@
 package edu.unika.aifb.dbsqr.importer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public abstract class Importer {
 	
 	protected TripleSink m_sink;
-	protected Map<String, List<String>> m_dsAndFilePaths;
+	protected List<String> m_files;
 
 	protected Importer() {
-		m_dsAndFilePaths = new HashMap<String, List<String>>();
+		m_files = new ArrayList<String>();
 	}
-
-	public void addImport(String ds, String file) {
-		List<String> files = m_dsAndFilePaths.get(ds);
-		if(files == null) {
-			files = new ArrayList<String>();
-			m_dsAndFilePaths.put(ds, files);
-		}
-		files.add(file);
+	
+	public void addImport(String fileName) {
+		m_files.add(fileName);
+	}
+	
+	public void addImports(Collection<String> fileNames) {
+		m_files.addAll(fileNames);
 	}
 
 	public void setTripleSink(TripleSink gb) {

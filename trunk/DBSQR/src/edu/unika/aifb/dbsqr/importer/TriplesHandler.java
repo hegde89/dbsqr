@@ -15,18 +15,17 @@ class TriplesHandler implements RDFHandler {
 
 	private int m_triplesTotal;
 	private int m_triplesAdded;
+	private String m_defaultContext;
 	private TripleSink m_sink;
-	private String m_ds;
 	
 	public TriplesHandler(TripleSink sink) {
 		m_sink = sink;
-		m_ds = "";
 	}
 
-	public void setDatasource(String ds) {
-		m_ds = ds;
+	public void setDefaultContext(String context) {
+		m_defaultContext = context;
 	}
-
+	
 	public void startRDF() throws RDFHandlerException {
 	}
 	
@@ -61,7 +60,7 @@ class TriplesHandler implements RDFHandler {
 		String object = null;
 		if (st.getObject() instanceof org.openrdf.model.URI) {
 			if(st.getPredicate().equals(RDF.TYPE)) {
-				type = Environment.TYPE;
+				type = Environment.ENTITY_MEMBERSHIP_PROPERTY;
 			} 
 			else {
 				type = Environment.OBJECT_PROPERTY;
@@ -90,8 +89,13 @@ class TriplesHandler implements RDFHandler {
 		
 		String property = st.getPredicate().toString();
 		
+		String context = m_defaultContext;
+		if (st.getContext() != null) {
+			context = st.getContext().toString();
+		}
+		
 		if (subject != null && object != null && property != null) {
-			m_sink.triple(subject, property, object, type, m_ds);
+			m_sink.triple(subject, property, object, context, type);
 			m_triplesAdded++;
 		}
 		else {
