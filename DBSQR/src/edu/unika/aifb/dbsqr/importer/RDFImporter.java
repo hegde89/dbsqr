@@ -1,6 +1,7 @@
 package edu.unika.aifb.dbsqr.importer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,33 +17,31 @@ public class RDFImporter extends Importer {
 
 	public RDFImporter() {
 		super();
-		log = Logger.getLogger(RDFImporter.class);
 	}
-	
+
 	@Override
 	public void doImport() {
-		for (String ds : m_dsAndFilePaths.keySet()) {
-			TriplesHandler handler = new TriplesHandler(m_sink);
-			log.info("Indexing data source " + ds);
-			handler.setDatasource(ds);
-			for (String file : m_dsAndFilePaths.get(ds)) {
-				RDFXMLParser parser = new RDFXMLParser();
-				parser.setDatatypeHandling(DatatypeHandling.VERIFY);
-				parser.setStopAtFirstError(false);
-				parser.setRDFHandler(handler);
-				parser.setVerifyData(false);
+		TriplesHandler handler = new TriplesHandler(m_sink);
 
-				try {
-					parser.parse(new BufferedReader(new FileReader(file), 10000000), "");
-				} catch (RDFParseException e) {
-					e.printStackTrace();
-				} catch (RDFHandlerException e) {
-					e.printStackTrace();
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		for (String file : m_files) {
+			handler.setDefaultContext(new File(file).getName());
+
+			RDFXMLParser parser = new RDFXMLParser();
+			parser.setDatatypeHandling(DatatypeHandling.VERIFY);
+			parser.setStopAtFirstError(false);
+			parser.setRDFHandler(handler);
+			parser.setVerifyData(false);
+
+			try {
+				parser.parse(new BufferedReader(new FileReader(file), 10000000), "");
+			} catch (RDFParseException e) {
+				e.printStackTrace();
+			} catch (RDFHandlerException e) {
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}

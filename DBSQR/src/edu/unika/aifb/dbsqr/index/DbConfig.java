@@ -24,9 +24,8 @@ public class DbConfig {
 	private String m_dbname = Environment.DEFAULT_DATABASE_NAME; 
 	private String m_port = Environment.DEFAULT_PORT;
 
-	//Data sources and associated data files
-	private Map<String,List<String>> m_dsAndFilePaths;
-	private List<String> m_dataSources;
+	//Data files
+	private List<String> m_files;
   
 	//Configuration information
 	private int m_maxDistance = Environment.DEFAULT_MAX_DISTANCE;
@@ -34,7 +33,7 @@ public class DbConfig {
 	private int m_topDatabase = Environment.DEFAULT_TOP_DATABASE;
 	
 	//Temporary directory
-	private String m_tempDir = System.getProperty("user.dir");
+	private String m_tempDir = Environment.DEFAULT_TEMPORAL_FILEPATH;
 	private String m_stopwordFilePath = Environment.DEFAULT_STOPWORD_FILEPATH; 
 	
 	//singleton
@@ -71,10 +70,8 @@ public class DbConfig {
 		m_maxDistance = config.get("maxDistance") != null ? (Integer)config.get("maxDistance") : Environment.DEFAULT_MAX_DISTANCE;
 		m_topKeyword = config.get("topKeyword") != null ? (Integer)config.get("topKeyword") : Environment.DEFAULT_TOP_KEYWORD;
 		m_topDatabase = config.get("topDatabase") != null ? (Integer)config.get("topDatabase") : Environment.DEFAULT_TOP_DATABASE;	
-		m_tempDir = config.get("tempDirectory") != null ? (String)config.get("tempDirectory") : System.getProperty("user.dir");
-		m_dsAndFilePaths = (Map<String,List<String>>)config.get("datasources");
-		m_dataSources = new ArrayList<String>();
-		m_dataSources.addAll(m_dsAndFilePaths.keySet());
+		m_tempDir = config.get("tempDirectory") != null ? (String)config.get("tempDirectory") : m_tempDir;
+		m_files = (List<String>)config.get("files");
 		m_stopwordFilePath = config.get("stopword") != null ? (String)config.get("stopword") : Environment.DEFAULT_STOPWORD_FILEPATH;
 	}
 	
@@ -110,13 +107,10 @@ public class DbConfig {
 		return m_topDatabase;
 	}
 	
-	public Collection<String> getDataSources() {
-		return m_dataSources;
+	public List<String> getDataFiles() {
+		return m_files;
 	}
 	
-	public Map<String,List<String>> getDsAndFilePaths() {
-		return m_dsAndFilePaths;
-	}
 	
 	public String getTemporaryDirectory() {
 		return m_tempDir;

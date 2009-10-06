@@ -1,0 +1,701 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head> 
+
+<title>Billion Triple Challenge 2009 Dataset and Statistics</title><meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<!-- <link rel="stylesheet" href="style.css" type="text/css" /> -->
+</head><body>
+<h1>Billion Triple Challenge 2009 Dataset</h1>
+
+<h2>Description</h2>
+	<p>The major part of the dataset was crawled
+during February/March 2009 based on datasets provided by Falcon-S,
+Sindice, Swoogle, SWSE, and Watson using the MultiCrawler/SWSE
+framework.
+To ensure wide coverage, we also included a (bounded) breadth-first
+crawl of depth 50 starting from
+http://www.w3.org/People/Berners-Lee/card.
+</p>
+
+<p>
+The downloaded content was parsed using the <a href="http://librdf.org/">Redland toolkit</a>
+with rdfxml, rss-tag-soup, rdfa parsers.
+We rewrote blank node identifiers to include the data source in order
+to provide unique blank nodes for each data source, and appended the
+data source to the output file.
+The data is encoded in <a href="http://sw.deri.org/2008/07/n-quads/">NQuads format</a> and split into chunks of 10m statements each.
+</p>
+
+<h2>Download</h2>
+<p>
+To fetch the content of the entire directory, download the <a href="http://vmlion25.deri.ie/000-CONTENTS">000-CONTENTS</a> file and do 
+<code>
+$ wget -i 000-CONTENTS
+</code>
+</p>
+<p>
+Please note that the size of the combined dataset (gzipped) is
+around 17GB.
+A smaller crawl useful for testing is available at
+<a href="http://vmlion25.deri.ie/btc-2009-small.nq.gz">btc-2009-small.nq.gz</a>.
+</p>
+<p>
+For questions about data format, server issues, or download
+problems contact the BTC dataset coordinator <a href="mailto:andreas.harth@deri.org">andreas.harth@deri.org</a>.
+</p>
+<p>
+Enjoy!
+</p>
+
+<h2>History</h2>
+
+<dl>
+  <dt>2009-06-19</dt>
+  <dd>Fixed minor unicode and blank node syntax issues</dd>
+  <dt>2009-04-16</dt>
+  <dd>Dataset posted</dd>
+</dl>
+	
+<h2>General statistics (~1,14 billion statements)</h2>
+
+<p>We calculated statistics over a 1 % random sample of the dataset,
+and scaled the derived numbers up accordingly.
+While the sampling process introduces an error in the final numbers, we
+still think the numbers are a sufficiently good estimate of the overall
+characteristics of the dataset.</p>
+
+		
+	<ul>
+		<li>distinct nodes: 1,464,829,200 
+		</li><li>distinct resources: 866,094,100 
+		</li><li>distinct blank nodes: 352,032,700 
+		</li><li>literals: 246,702,400 
+	</li></ul>
+
+<p>The stats were created with the <a href="http://sw.deri.org/sw/2006/08/nxparser/">NxParser library</a> statistics package by <a href="http://umbrich.net/">Jürgen Umbrich</a>.</p>
+
+	<h2>Top-50 classes and their frequency</h2>
+
+	<p>For resolving the prefixes with their namespaces please use the service provided by <a href="http://prefix.cc/">prefix.cc</a>.</p>
+
+	<table border="0">
+<tbody><tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:Person</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">38,844,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">sioct:WikiArticle</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">14,133,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rss:item</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,650,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:OnlineAccount</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">12,188,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:Feature</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,550,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Person</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">5,628,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:Class</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">2,701,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Article-Reference</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">2,605,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:Document</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">2,337,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://xmlns.com/wordnet/1.6/Person</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">1,855,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:chatEvent</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">1,833,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Affiliated-Person</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">1,287,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#HtmlDocument</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">1,118,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:PersonalProfileDocument</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">961,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Book-Section-Reference</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">762,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdf:Seq</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">704,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">skos:Concept</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">702,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">sioc:User</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">701,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:AnnotationProperty</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">623,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.daml.org/2002/02/telephone/1/areacodes-ont#Exchange</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">616,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">sioct:Category</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">603,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.kisti.re.kr/isrl/ResearchRefOntology#TopicAreaOfAccomplishment</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">561,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rss:channel</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">544,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:ObjectProperty</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">517,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">vcard:VCard</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">495,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://purl.oclc.org/net/rss_2.0/enc#Enclosure</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">492,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">vcard:Name</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">459,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">mo:Track</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">458,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.kisti.re.kr/isrl/ResearchRefOntology#Location</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">456,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:Ontology</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">452,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akts:Time-Interval</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">447,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:Restriction</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">441,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Project</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">379,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:Thing</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">377,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Funding</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">369,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.geneontology.org/formats/oboInOwl#DbXref</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">362,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Amount-Of-Money</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">361,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://blogs.yandex.ru/schema/foaf/Posts</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">345,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdf:Statement</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">340,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://owl.mindswap.org/2003/ont/owlweb.rdf#ProgramData</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">338,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.kisti.re.kr/isrl/ResearchRefOntology#CreatorInfo</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">325,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:Agent </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">324,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdf:Property </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">303,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">mo:Record </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">296,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:Publication-Reference </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">274,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://dbpedia.org/class/yago/LivingPeople </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">271,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:FunctionalProperty </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">266,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">mo:MusicalArtist </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">260,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">lfm:ScrobbleEvent</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">255,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://www.rdfabout.com/rdf/schema/usbill/LegislativeAction</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">243,300</td>
+</tr>
+</tbody></table>
+
+<h2>Top-50 RDF Properties and their frequency</h2>
+
+<p>For resolving the prefixes with their namespaces please use the service provided by <a href="http://prefix.cc/">prefix.cc</a>.</p>
+
+<table border="0">
+<tbody><tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://dbpedia.org/property/wikilink</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">156,434,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdf:type</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">143,479,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdfs:seeAlso</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">53,852,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:knows</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">35,786,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:nick</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">32,979,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:weblog</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">23,239,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">dc:title</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">22,356,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:has-author</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">19,541,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">sioc:links_to</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">19,228,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">skos:subject</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">18,280,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:interest</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">16,786,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:member_name</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">14,799,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rss:link</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">14,357,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:holdsAccount</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">14,038,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:image</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,871,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rss:title</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,524,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdfs:label</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,515,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:name</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,179,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:nearbyFeatures</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,128,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">dc:date</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">12,519,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:accountName</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">12,133,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:accountServiceHomepage</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">12,068,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:parentFeature</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">11,466,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:tagLine</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">10,677,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rss:description</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,844,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">content:encoded</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,794,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:accountProfilePage</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,483,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">sioc:has_container</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,171,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdfs:comment</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,109,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:cites-publication-reference</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">8,944,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:name</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,600,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geo:lat</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,399,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geo:long</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,341,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://dbpedia.org/property/wikiPageUsesTemplate</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,102,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:full-name</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,100,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">dc:creator</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,987,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:featureClass</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,962,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:inCountry</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,827,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:locationMap</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,822,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames:featureCode</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,822,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">owl:sameAs</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,539,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://dbpedia.org/property/redirect</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,451,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:homepage</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,427,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://dbpedia.org/property/abstract</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">5,750,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:img </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">5,562,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">http://purl.org/rss/1.0/modules/rss091#pubDate</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,814,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">foaf:page</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,653,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">dc:description</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,651,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:has-title</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,310,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">akt:has-date</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,923,200</td>
+</tr>
+</tbody></table>
+
+<h2>Top-50 PLDs of sources and their frequency in the data set</h2>
+
+<p>"A pay-level domain (PLD)is any domain that requires payment at a
+TLD or cc-TLD
+registrar. PLDs are usually one level below the corresponding TLD
+(e.g., amazon.com), with certain exceptions for cc-TLDs (e.g.,
+ebay.co.uk, det.wa.edu.au)"[<a href="http://irl.cs.tamu.edu/people/hsin-tsang/papers/www2008.pdf">IRLBot</a>]</p>
+
+<table border="0">
+<tbody><tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">dbpedia.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">403,490,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">livejournal.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">177,194,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rkbexplorer.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">155,367,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">geonames.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">131,639,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">mybloglog.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">101,977,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">sioc-project.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">82,271,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">qdos.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">35,620,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">kanzaki.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">35,259,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">hi5.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">33,224,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">dbtune.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">25,373,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rdfabout.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">23,738,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">plode.us</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">23,379,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">opiumfield.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">17,348,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">l3s.de</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">16,640,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">craigslist.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">14,673,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">vox.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,577,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">opencyc.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">13,026,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">freebase.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">12,810,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">friendfeed.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">12,403,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">fu-berlin.de</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">11,259,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">cpan.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">10,778,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">opera.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,312,800</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">identi.ca</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">9,124,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">talkdigger.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">8,861,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">daml.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,684,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">mindswap.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,379,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">deri.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,370,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">ya.ru</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">7,293,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">loadaveragezero.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,786,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">musicbrainz.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,548,600</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">apassant.net</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">6,254,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">uniprot.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">5,864,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">live.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">5,841,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">cyc.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">5,787,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">berkeleybop.org</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,772,300</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">blogspot.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,734,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">blogspace.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,510,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">deadjournal.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,466,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">rambler.ru</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">4,436,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">webry.info</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,818,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">linuxcnc.org </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,763,900</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">w3.org </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,642,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">hyphen.info </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,593,100</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">feedburner.com </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,467,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">bio2rdf.org </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,361,200</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">ontologycentral.com </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,281,700</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">zitgist.com </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">3,067,500</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">twitter.com </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">2,970,400</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">linkedmdb.org </td>
+<td style="font-size: 10pt;" align="right" valign="bottom">2,778,000</td>
+</tr>
+<tr>
+<td style="font-size: 10pt;" align="left" valign="bottom">photobucket.com</td>
+<td style="font-size: 10pt;" align="right" valign="bottom">2,723,300</td>
+</tr>
+</tbody></table>
+
+</body></html>
