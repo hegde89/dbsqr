@@ -15,9 +15,9 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
-public class DbService {
+public class DBService {
 	
-	private static final Logger log = Logger.getLogger(DbService.class); 
+	private static final Logger log = Logger.getLogger(DBService.class); 
 	
 	private Connection m_conn;
 	private String m_server;
@@ -34,7 +34,7 @@ public class DbService {
 	 * @param port
 	 * @param dbName
 	 */
-	public DbService(String server, String userName, String password, String port, String dbName, boolean createDB) {
+	public DBService(String server, String userName, String password, String port, String dbName, boolean createDB) {
 		ResultSet rs = null;
 		Statement stmt = null;
 		try {
@@ -88,8 +88,8 @@ public class DbService {
 	 * Get an additional connection for nested queries
 	 * @return
 	 */
-	public DbService getAdditionalConnection() {
-		return new DbService(m_server, m_userName, m_password, m_port, m_dbName, false);
+	public DBService getAdditionalConnection() {
+		return new DBService(m_server, m_userName, m_password, m_port, m_dbName, false);
 	}
 	
 	/**
