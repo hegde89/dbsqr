@@ -35,7 +35,7 @@ import org.openrdf.model.vocabulary.RDFS;
 
 import edu.unika.aifb.dbsqr.Config;
 import edu.unika.aifb.dbsqr.Environment;
-import edu.unika.aifb.dbsqr.db.DbService;
+import edu.unika.aifb.dbsqr.db.DBService;
 import edu.unika.aifb.dbsqr.importer.Importer;
 import edu.unika.aifb.dbsqr.importer.N3Importer;
 import edu.unika.aifb.dbsqr.importer.NxImporter;
@@ -48,7 +48,7 @@ public class DBIndexBuilder {
 	
 	private static final Logger log = Logger.getLogger(DBIndexBuilder.class);
 	
-	private DbService m_dbService;
+	private DBService m_dbService;
 	private Map<Integer, Importer> m_importers;
 	private Config m_config;
 	
@@ -136,7 +136,7 @@ public class DBIndexBuilder {
 		String password = m_config.getDbPassword();
 		String port = m_config.getDbPort();
 		String dbName = m_config.getDbName();
-		m_dbService = new DbService(server, username, password, port, dbName, createDb);
+		m_dbService = new DBService(server, username, password, port, dbName, createDb);
 	}
 	
 	public void createTripleTable() {
