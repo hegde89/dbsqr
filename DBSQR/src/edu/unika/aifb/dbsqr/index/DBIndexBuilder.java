@@ -33,7 +33,9 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 
+import edu.unika.aifb.dbsqr.Config;
 import edu.unika.aifb.dbsqr.Environment;
+import edu.unika.aifb.dbsqr.db.DbService;
 import edu.unika.aifb.dbsqr.importer.Importer;
 import edu.unika.aifb.dbsqr.importer.N3Importer;
 import edu.unika.aifb.dbsqr.importer.NxImporter;
@@ -48,14 +50,14 @@ public class DBIndexBuilder {
 	
 	private DbService m_dbService;
 	private Map<Integer, Importer> m_importers;
-	private DbConfig m_config;
+	private Config m_config;
 	
 	
-	public DBIndexBuilder(DbConfig config) {
+	public DBIndexBuilder(Config config) {
 		this(config, true);
 	}
 	
-	public DBIndexBuilder(DbConfig config, boolean createDb) {
+	public DBIndexBuilder(Config config, boolean createDb) {
 		m_config = config;
 		m_importers = new HashMap<Integer, Importer>();
 		

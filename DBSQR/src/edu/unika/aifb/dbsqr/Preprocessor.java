@@ -2,10 +2,7 @@ package edu.unika.aifb.dbsqr;
 
 import org.apache.log4j.Logger;
 
-import edu.unika.aifb.dbsqr.index.DbConfig;
 import edu.unika.aifb.dbsqr.index.DBIndexBuilder;
-import edu.unika.aifb.dbsqr.index.KeywSearchIndexBuilder;
-import edu.unika.aifb.dbsqr.index.KeywSearchIndexBuilder_2;
 
 public class Preprocessor {
 	
@@ -19,8 +16,8 @@ public class Preprocessor {
 //		}
 		long start = System.currentTimeMillis();
 
-		DbConfig.setConfigFilePath("./res/config/config.cfg");
-		DbConfig config = DbConfig.getConfig();
+		Config.setConfigFilePath("./res/config/config.cfg");
+		Config config = Config.getConfig();
 
 		DBIndexBuilder indexBuilder = new DBIndexBuilder(config);
 		indexBuilder.createTripleTable();
