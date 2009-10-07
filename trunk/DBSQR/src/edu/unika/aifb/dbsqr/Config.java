@@ -1,4 +1,4 @@
-package edu.unika.aifb.dbsqr.index;
+package edu.unika.aifb.dbsqr;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,11 +11,10 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.ho.yaml.Yaml;
 
-import edu.unika.aifb.dbsqr.Environment;
 
-public class DbConfig {
+public class Config {
 	
-	private static final Logger log = Logger.getLogger(DbConfig.class);
+	private static final Logger log = Logger.getLogger(Config.class);
 
 	//Server information
 	private String m_server = Environment.DEFAULT_SERVER;
@@ -37,20 +36,20 @@ public class DbConfig {
 	private String m_stopwordFilePath = Environment.DEFAULT_STOPWORD_FILEPATH; 
 	
 	//singleton
-	public static DbConfig single = null;
+	public static Config single = null;
 	public static String configFilePath = null;
 
 	public static void setConfigFilePath(String configFileName) {
 		configFilePath = configFileName;
 	}
-	public static DbConfig getConfig() {
+	public static Config getConfig() {
 		if(single == null) {
-			single = new DbConfig(configFilePath);
+			single = new Config(configFilePath);
 		}
 		return single;
 	}
 	
-	private DbConfig(String configFileName) {
+	private Config(String configFileName) {
 		load(configFileName);
 	}
 	

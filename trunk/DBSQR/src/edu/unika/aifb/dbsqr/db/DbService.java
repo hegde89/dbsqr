@@ -1,4 +1,4 @@
-package edu.unika.aifb.dbsqr.index;
+package edu.unika.aifb.dbsqr.db;
 
 import java.io.File;
 import java.sql.Connection;
@@ -8,17 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
-
-import edu.unika.aifb.dbsqr.Environment;
 
 public class DbService {
 	
