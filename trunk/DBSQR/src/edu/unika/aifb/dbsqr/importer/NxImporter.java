@@ -7,12 +7,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.XMLSchema;
 import org.semanticweb.yars.nx.BNode;
 import org.semanticweb.yars.nx.Literal;
 import org.semanticweb.yars.nx.Node;
@@ -29,7 +39,7 @@ public class NxImporter extends Importer {
 	private TLDManager tldM;
 	
 	public NxImporter() {
-		TLDManager tldM = new TLDManager();
+		tldM = new TLDManager();
 		try {
 			tldM.readList("./res/tld.dat");
 		} catch (IOException e) {
@@ -54,9 +64,12 @@ public class NxImporter extends Importer {
 					
 					if (nodes[0] instanceof Resource) {
 						subject = ((Resource)nodes[0]).toString();
+						if(subject.length() > 100)
+							continue;
 					}
 					else if (nodes[0] instanceof BNode) {
 						subject = ((BNode)nodes[0]).toString();
+						continue;
 					}
 					else 
 						log.error("subject is neither a resource nor a bnode");
@@ -69,13 +82,17 @@ public class NxImporter extends Importer {
 					
 					if (nodes[2] instanceof Resource) {
 						object = ((Resource)nodes[2]).toString();
-						if((property.startsWith(RDF.NAMESPACE) || property.startsWith(RDFS.NAMESPACE)) && 
-								(object.startsWith(RDF.NAMESPACE) || object.startsWith(RDFS.NAMESPACE))) {
-							type = Environment.RDFS_PROPERTY;
-						}	
-						else if(property.equals(RDF.TYPE.stringValue())) {
+						if(object.length() > 100)
+							continue;
+						if(property.equals(RDF.TYPE.stringValue()) && 
+								!(object.startsWith(RDF.NAMESPACE) || object.startsWith(RDFS.NAMESPACE) || 
+										object.startsWith(OWL.NAMESPACE) || object.startsWith(XMLSchema.NAMESPACE))) {
 							type = Environment.ENTITY_MEMBERSHIP_PROPERTY;
 						}
+						else if((property.startsWith(RDF.NAMESPACE) || property.startsWith(RDFS.NAMESPACE) || 
+								property.startsWith(OWL.NAMESPACE) || property.startsWith(XMLSchema.NAMESPACE))) {
+							type = Environment.RDFS_PROPERTY;
+						}	
 						else {
 							type = Environment.OBJECT_PROPERTY;
 						}
@@ -83,12 +100,14 @@ public class NxImporter extends Importer {
 					else if (nodes[2] instanceof BNode) {
 						object = ((BNode)nodes[2]).toString();
 						type = Environment.OBJECT_PROPERTY;
+						continue;
 					}
 					else if (nodes[2] instanceof Literal) {
 						object = ((Literal)nodes[2]).getData();
-						if(object.length() > 100)
+						if(object.length() > 50)
 							continue;
-						if((property.startsWith(RDF.NAMESPACE) || property.startsWith(RDFS.NAMESPACE))) {
+						if((property.startsWith(RDF.NAMESPACE) || property.startsWith(RDFS.NAMESPACE) || 
+								property.startsWith(OWL.NAMESPACE) || property.startsWith(XMLSchema.NAMESPACE))) {
 							type = Environment.RDFS_PROPERTY;
 						}
 						else {
@@ -127,12 +146,13 @@ public class NxImporter extends Importer {
 	
 	public static void main(String[] args) throws IOException {
 		NxImporter importer = new NxImporter();
-		final HashSet<String> dataSources  = new HashSet<String>();
-		final HashSet<String> classes  = new HashSet<String>();
-		importer.addImport("d://btc-2009-small.nq");
+		final Map<String,Integer> dataSources  = new HashMap<String,Integer>();
+		final Set<String> classes  = new HashSet<String>();
+		importer.addImport("d://Test/btc_data/btc-2009-small.nq");
 		importer.setTripleSink(new TripleSink() {
 			public void triple(String subject, String property, String object, String ds, int type){
-				dataSources.add(ds);
+				int freq = (dataSources.get(ds) == null) ? 1 : (dataSources.get(ds)+1);
+				dataSources.put(ds,freq);
 				if(property.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
 					classes.add(object + "\t" + ds);
 				}	
@@ -140,17 +160,18 @@ public class NxImporter extends Importer {
 		});
 		importer.doImport();
 	
-		File dsOutput = new File("d://ds");
+		File dsOutput = new File("d://Test/btc_data/ds");
 		if(!dsOutput.exists())
 			dsOutput.createNewFile();
 		PrintWriter pw  = new PrintWriter(new FileWriter(dsOutput));
-		for(String ds : dataSources) {
-			pw.println(ds);
+		Map<String,Integer> dataSouces2 = sortByValue(dataSources); 
+		for(String ds : dataSouces2.keySet()) {
+			pw.println(ds + ": " + dataSouces2.get(ds));
 		}
 		pw.flush();
 		pw.close();
 		
-		File classOutput = new File("d://class");
+		File classOutput = new File("d://Test/btc_data/class");
 		if(!classOutput.exists())
 			classOutput.createNewFile();
 		pw  = new PrintWriter(new FileWriter(classOutput));
@@ -160,6 +181,21 @@ public class NxImporter extends Importer {
 		pw.flush();
 		pw.close();
 		
+	}
+	
+	public static <K,V extends Comparable<V>> Map<K,V> sortByValue(Map<K,V> map) {
+	     List<Map.Entry<K,V>> list = new LinkedList<Map.Entry<K,V>>(map.entrySet());
+	     Collections.sort(list, new Comparator<Map.Entry<K,V>>() {
+	          public int compare(Map.Entry<K,V> o1, Map.Entry<K,V> o2) {
+	               return o2.getValue().compareTo(o1.getValue());
+	          }
+	     });
+	     Map<K,V> result = new LinkedHashMap<K,V>();
+	     for (Iterator<Map.Entry<K, V>> it = list.iterator(); it.hasNext();) {
+	    	 Map.Entry<K, V> entry = it.next();
+	    	 result.put(entry.getKey(), entry.getValue());
+	     }
+	     return result;
 	}
 
 }
