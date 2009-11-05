@@ -69,7 +69,7 @@ public class Config {
 		m_maxDistance = config.get("maxDistance") != null ? (Integer)config.get("maxDistance") : Environment.DEFAULT_MAX_DISTANCE;
 		m_topKeyword = config.get("topKeyword") != null ? (Integer)config.get("topKeyword") : Environment.DEFAULT_TOP_KEYWORD;
 		m_topDatabase = config.get("topDatabase") != null ? (Integer)config.get("topDatabase") : Environment.DEFAULT_TOP_DATABASE;	
-		m_tempDir = config.get("tempDirectory") != null ? (String)config.get("tempDirectory") : m_tempDir;
+		m_tempDir = config.get("tempDirectory") != null ? (String)config.get("tempDirectory") : Environment.DEFAULT_TEMPORAL_FILEPATH;
 		m_files = (List<String>)config.get("files");
 		m_stopwordFilePath = config.get("stopword") != null ? (String)config.get("stopword") : Environment.DEFAULT_STOPWORD_FILEPATH;
 	}
