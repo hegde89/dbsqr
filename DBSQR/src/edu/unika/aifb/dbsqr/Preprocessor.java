@@ -1,8 +1,12 @@
 package edu.unika.aifb.dbsqr;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import org.apache.log4j.Logger;
 
-import edu.unika.aifb.dbsqr.index.DBIndexBuilder;
+import edu.unika.aifb.dbsqr.index.DBIndexService;
+import edu.unika.aifb.dbsqr.index.DBIndexService_oldest;
 
 public class Preprocessor {
 	
@@ -10,30 +14,31 @@ public class Preprocessor {
 	
 	public static void main(String[] args) throws Exception {
 
-//		if (args.length != 1) {
-//			System.out.println("java Preprocess configFilePath(String)");
-//			return;
-//		}
+	    Calendar now = Calendar.getInstance();
+	    log.info("==================================================================================");
+        SimpleDateFormat formatter = new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz");
+        log.info("  It is now : " + formatter.format(now.getTime()));
 		long start = System.currentTimeMillis();
 
 		Config.setConfigFilePath("./res/config/config.cfg");
 		Config config = Config.getConfig();
 
-		DBIndexBuilder indexBuilder = new DBIndexBuilder(config);
+		DBIndexService indexBuilder = new DBIndexService(config);
 		indexBuilder.createTripleTable();
 		indexBuilder.createDatasourceTable();
 		indexBuilder.createSchemaTable();
 		indexBuilder.createEntityTable();
 		indexBuilder.createEntityRelationTable();
-		indexBuilder.createKeywordEntityInclusionTableUsingLucene();
-//		int maxDistance = config.getMaxDistance();
-//		for(int i = 2; i <= maxDistance; i++) {
-//			indexBuilder.createEntityRelationTable(i);
-//		}
-//		indexBuilder.createKeywordEntityInclusionTable();
+		int maxDistance = config.getMaxDistance();
+		for(int i = 2; i <= 2; i++) {
+			indexBuilder.createEntityRelationTable(i);
+		}
+		indexBuilder.createAllKeywordTable();
+		indexBuilder.createKeywordConceptConnectionTable();
+		indexBuilder.close();
 
 		long end = System.currentTimeMillis();
-		System.out.println("Time customing: " + (double)(end - start)/(double)1000 + "(sec)");
-		System.out.println("Time customing: " + (double)(end - start)/(double)60000 + "(min)");
+		log.info("Time customing: " + (double)(end - start)/(double)1000 + "(sec)");
+		log.info("Time customing: " + (double)(end - start)/(double)60000 + "(min)");
 	}	
 }

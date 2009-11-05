@@ -30,14 +30,14 @@ public class Environment {
 	public static final String DEFAULT_PORT = "3306";
 	public static final String DEFAULT_USERNAME = "root";
 	public static final String DEFAULT_PASSWORD = "root";
-	public static final String DEFAULT_DATABASE_NAME = "db_dbsqr";
+	public static final String DEFAULT_DATABASE_NAME = "dbsqr";
 	
 	/* Default configuration information */
 	public static final int DEFAULT_MAX_DISTANCE = 2;
 	public static final int DEFAULT_TOP_KEYWORD = 4;
 	public static final int DEFAULT_TOP_DATABASE = 4;
 	public static final String DEFAULT_STOPWORD_FILEPATH = "stop_words.txt"; 
-	public static final String DEFAULT_TEMPORAL_FILEPATH = "d://dbsqr/lucene";
+	public static final String DEFAULT_TEMPORAL_FILEPATH = "d://dbsqr/";
 	
 	/* Indexed Field of Entity Index*/
 	public static final String FIELD_TERM_LITERAL = "literal";
@@ -84,8 +84,9 @@ public class Environment {
 	public static final String SCHEMA_TABLE = "schema_table";	 				
 	public static final String SCHEMA_ID_COLUMN = "schema_id";					// column 1 
 	public static final String SCHEMA_URI_COLUMN = "schema_uri";				// column 2
-	public static final String SCHEMA_TYPE_COLUMN = "schema_type";	 			// column 3
-	public static final String SCHEMA_DS_ID_COLUMN = "schema_ds_id";			// column 4
+	public static final String SCHEMA_FREQ_COLUMN = "schema_freq";				// column 3
+	public static final String SCHEMA_TYPE_COLUMN = "schema_type";	 			// column 4
+	public static final String SCHEMA_DS_ID_COLUMN = "schema_ds_id";			// column 5
 	
 	// Entity table
 	public static final String ENTITY_TABLE = "entity_table"; 					
@@ -114,9 +115,10 @@ public class Environment {
 	
 	// Keyword table
 	public static final String KEYWORD_TABLE = "keyword_table";					
-	public static final String KEYWORD_ID_COLUMN = "keyw_id";	// column 1 
-	public static final String KEYWORD_COLUMN = "keyw";			// column 2
+	public static final String KEYWORD_ID_COLUMN = "keyw_id";			// column 1 
+	public static final String KEYWORD_COLUMN = "keyw";					// column 2
 	public static final String KEYWORD_TYPE_COLUMN = "keyw_type"; 		// column 3
+	public static final String KEYWORD_DS_ID_COLUMN = "keyw_ds_id"; 	// column 4 
 	
 	// Keyword entity inclusion table
 	public static final String KEYWORD_ENTITY_INCLUSION_TABLE = "keyw_entity_incl_table";	
@@ -129,30 +131,40 @@ public class Environment {
 	public static final String KEYWORD_ENTITY_INCLUSION_DS_ID_COLUMN = "incl_ds_id";			// column 6 
 	public static final String KEYWORD_ENTITY_INCLUSION_PATH_COLUMN = "incl_path"; 				
 	
-	// Keyword entity reachability table
-	public static final String KEYWORD_ENTITY_REACHABILITY_TABLE = "keyw_entity_reach_table";	
-	public static final String KEYWORD_ENTITY_REACHABILITY_KEYWORD_ID_COLUMN = "reach_keyw_id";	// column 1	
-	public static final String KEYWORD_ENTITY_REACHABILITY_ENTITY_ID_COLUMN = "reach_entity_id";// column 2
-	public static final String KEYWORD_ENTITY_REACHABILITY_SCORE_COLUMN = "reach_score"; 		// column 3
-	public static final String KEYWORD_ENTITY_REACHABILITY_DS_ID_COLUMN = "reach_ds_id";		// column 4
-	public static final String KEYWORD_ENTITY_REACHABILITY_PATH_COLUMN = "reach_path"; 			// column 5
+	// Keyword complete table
+	public static final String COMPLETE_KEYWORD_TABLE = "comp_keyw_table";
+	public static final String COMPLETE_ID_COLUMN = "comp_id";				// column 1
+	public static final String COMPLETE_KEYWORD_COLUMN = "comp_keyw";		// column 2
+	public static final String COMPLETE_TYPE_COLUMN = "comp_type";  		// column 3
+	public static final String COMPLETE_SCORE_COLUMN = "comp_score";		// column 4
 	
-	// Keyword pair connected entity table
-	public static final String KEYWORDPAIR_CONNECTEDENTITY_TABLE = "keyw_pair_conn_table";
-	public static final String KEYWORDPAIR_CONNECTEDENTITY_KEYWORD1_ID_COLUMN = "conn_kId1";	// column 1
-	public static final String KEYWORDPAIR_CONNECTEDENTITY_KEYWORD2_ID_COLUMN = "conn_kId1";	// column 2
-	public static final String KEYWORDPAIR_CONNECTEDENTITY_ENTITY_ID_COLUMN = "conn_entity_id";	// column 3
-	public static final String KEYWORDPAIR_CONNECTEDENTITY_SCORE_COLUMN = "conn_score";			// column 4
-	public static final String KEYWORDPAIR_CONNECTEDENTITY_DS_ID_COLUMN = "conn_ds_id";			// column 5
-
-//	// Cluster table
-//	public static final String CLUSTER_TABLE = "cluster_table";
-//	public static final String CLUSTER_ID_COLUMN = "cluster_id"; 				// column 1
-//	public static final String CLUSTER_ELEMENT_ID_COLUMN = "cluster_ele_id"; 	// column 2
-//	
-//	// Visited Element table (used for clustering)
-//	public static final String VISITED_ELEMENT_TABLE = "visited_ele_table";		// column 1
-//	public static final String VISITED_ELEMENT_ID_COLUMN = "visited_ele_id";	// column 2
+	// Keyword entity connection table
+	public static final String KEYWORD_ENTITY_CONNECTION_TABLE = "keyw_entity_conn_table";	
+	public static final String KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN = "entity_conn_keyw_uid";		// column 1	
+	public static final String KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN = "entity_conn_keyw_vid";		// column 2	
+	public static final String KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN = "entity_conn_entity_uid";		// column 3
+	public static final String KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN = "entity_conn_entity_vid";		// column 4
+	public static final String KEYWORD_ENTITY_CONNECTION_CONCEPT_UID_COLUMN = "entity_conn_concept_uid"; 	// column 5
+	public static final String KEYWORD_ENTITY_CONNECTION_CONCEPT_VID_COLUMN = "entity_conn_concept_vid"; 	// column 5
+	public static final String KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN = "entity_conn_ds_uid"; 				// column 5
+	public static final String KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN = "entity_conn_ds_vid"; 				// column 5
+	public static final String KEYWORD_ENTITY_CONNECTION_DISTANCE = "entity_conn_dis";						// column 5
+	public static final String KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN = "entity_conn_score"; 				// column 6
+	
+	// Keyword concept connection table
+	public static final String KEYWORD_CONCEPT_CONNECTION_TABLE = "keyw_concept_conn_table";	
+	public static final String KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN = "concept_conn_keyw_uid";		// column 1	
+	public static final String KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN = "concept_conn_keyw_vid";		// column 2	
+	public static final String KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN = "concept_conn_concept_uid";	// column 3
+	public static final String KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN = "concept_conn_concept_vid";	// column 4
+	public static final String KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN = "concept_conn_ds_uid";			// column 5
+	public static final String KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN = "concept_conn_ds_vid";			// column 6
+	public static final String KEYWORD_CONCEPT_CONNECTION_DISTANCE = "concept_conn_dis";					// column 7
+	public static final String KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN = "concept_conn_score"; 				// column 8
+	public static final String KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN = "concept_conn_type";				// column 9
+	
+	public static final String KEYWORD_CONCEPT_CONNECTION_ENTITY_UID_COLUMN = "concept_conn_entity_uid";
+	public static final String KEYWORD_CONCEPT_CONNECTION_ENTITY_VID_COLUMN = "concept_conn_entity_vid";
 	
 	
 }
