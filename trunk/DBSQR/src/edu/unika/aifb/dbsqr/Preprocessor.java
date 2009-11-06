@@ -6,7 +6,6 @@ import java.util.Calendar;
 import org.apache.log4j.Logger;
 
 import edu.unika.aifb.dbsqr.index.DBIndexService;
-import edu.unika.aifb.dbsqr.index.DBIndexService_oldest;
 
 public class Preprocessor {
 	
