@@ -10,9 +10,11 @@
 	<classpathentry kind="lib" path="lib/slf4j-api-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/sesame-model-2.3-pr1.jar"/>
-	<classpathentry kind="lib" path="lib/nxparser-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.6-bin.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-core-2.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.7.jar"/>
+	<classpathentry kind="lib" path="lib/jena-2.6.2.jar"/>
+	<classpathentry kind="lib" path="lib/nxparser-1.1.jar"/>
+	<classpathentry kind="src" path="eva"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
