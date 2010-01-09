@@ -32,7 +32,7 @@ public class Preprocessor {
 		for(int i = 2; i <= 2; i++) {
 			indexBuilder.createEntityRelationTable(i);
 		}
-		indexBuilder.createAllKeywordTable();
+		indexBuilder.createCompleteKeywordTable();
 		indexBuilder.createKeywordConceptConnectionTable();
 		indexBuilder.close();
 
