@@ -55,7 +55,7 @@ class TriplesHandler implements RDFHandler {
 
 	public void handleStatement(Statement st) throws RDFHandlerException {
 		m_triplesTotal++;
-		int type = Environment.UNKNOWN; 
+		int type = Environment.UNPROCESSED; 
 		
 		String subject = null; 
 		if (st.getSubject() instanceof org.openrdf.model.URI) {
