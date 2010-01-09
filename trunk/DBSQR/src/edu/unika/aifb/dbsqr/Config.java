@@ -25,6 +25,9 @@ public class Config {
 
 	//Data files
 	private List<String> m_files;
+	private String m_dsFile;
+	private int m_dsFrom;
+	private int m_dsEnd;
   
 	//Configuration information
 	private int m_maxDistance = Environment.DEFAULT_MAX_DISTANCE;
@@ -71,6 +74,9 @@ public class Config {
 		m_topDatabase = config.get("topDatabase") != null ? (Integer)config.get("topDatabase") : Environment.DEFAULT_TOP_DATABASE;	
 		m_tempDir = config.get("tempDirectory") != null ? (String)config.get("tempDirectory") : Environment.DEFAULT_TEMPORAL_FILEPATH;
 		m_files = (List<String>)config.get("files");
+		m_dsFile = config.get("dsFile") != null ? (String)config.get("dsFile") : Environment.DEFAULT_DS_FILEPATH;	
+		m_dsFrom = config.get("dsFrom") != null ? (Integer)config.get("dsFrom") : Environment.DEFAULT_DS_FROM;
+		m_dsEnd = config.get("dsEnd") != null ? (Integer)config.get("dsEnd") : Environment.DEFAULT_DS_END;
 		m_stopwordFilePath = config.get("stopword") != null ? (String)config.get("stopword") : Environment.DEFAULT_STOPWORD_FILEPATH;
 	}
 	
@@ -110,6 +116,17 @@ public class Config {
 		return m_files;
 	}
 	
+	public String getDsFile() {
+		return m_dsFile;
+	} 
+	
+	public int getDsFromNum() {
+		return m_dsFrom;
+	} 
+	
+	public int getDsEndNum() {
+		return m_dsEnd;
+	} 
 	
 	public String getTemporaryDirectory() {
 		return m_tempDir;
