@@ -4,7 +4,11 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 
+import org.apache.log4j.Logger;
+
 public class Log {
+	
+	private static final Logger log = Logger.getLogger(Log.class);
 	
 	private String fileName;
 	private BufferedWriter outFile;
@@ -13,46 +17,45 @@ public class Log {
 		this.fileName = fileName;
 	}
 	
-	public void Open(){
+	public void open(){
 		try{
 			this.outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.fileName)));
 		}
 		catch(Exception e){
-			System.out.println("Error while creating log file: " + this.fileName);
-			System.out.println(e.getClass() + ":" + e.getMessage());
+			log.warn("Error while creating log file: " + this.fileName);
+			log.warn(e.getClass() + ":" + e.getMessage());
 		}
 	}
 	
-	public void OpenAppend(){
+	public void openAppend(){
 		try{
 			this.outFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.fileName, true)));
 		}
 		catch(Exception e){
-			System.out.println("Error while creating log file: " + this.fileName);
-			System.out.println(e.getClass() + ":" + e.getMessage());
+			log.warn("Error while creating log file: " + this.fileName);
+			log.warn(e.getMessage());
 		}
 	}
 
-	public void WriteLog(String message){
+	public void writeLog(String message){
 		try{
-			System.out.println(message);
 			this.outFile.write(message);
 			this.outFile.newLine();
 			this.outFile.flush();
 		}
 		catch(Exception e){
-			System.out.println("Error while writting data to the log file");
-			System.out.println(e.getClass() + ":" + e.getMessage());
+			log.warn("Error while writting data to the log file");
+			log.warn(e.getClass() + ":" + e.getMessage());
 		}
 	}
 	
-	public void Close(){
+	public void close(){
 		try{
 			this.outFile.close();
 		}
 		catch(Exception e){
-			System.out.println("Error while closing the log file");
-			System.out.println(e.getClass() + ":" + e.getMessage());
+			log.warn("Error while closing the log file");
+			log.warn(e.getClass() + ":" + e.getMessage());
 		}
 	}
 }
