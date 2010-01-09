@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,8 +38,20 @@ public class NxImporter extends Importer {
 	private static Logger log = Logger.getLogger(NxImporter.class);
 	
 	private TLDManager tldM;
+	private Collection<String> dataSources;
 	
 	public NxImporter() {
+		tldM = new TLDManager();
+		try {
+			tldM.readList("./res/tld.dat");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	} 
+	
+	public NxImporter(Collection<String> dataSources) {
+		this.dataSources = dataSources;
 		tldM = new TLDManager();
 		try {
 			tldM.readList("./res/tld.dat");
@@ -57,19 +70,22 @@ public class NxImporter extends Importer {
 				NxParser nxp = new NxParser(new FileInputStream(file));
 				
 				while (nxp.hasNext()) {
+					boolean toProcess = true;
 					Node[] nodes = nxp.next();
 					
 					String subject = null, property = null, object = null, ds = null; 
-					int type = Environment.UNKNOWN;
+					int type = Environment.UNPROCESSED;
 					
 					if (nodes[0] instanceof Resource) {
 						subject = ((Resource)nodes[0]).toString();
-						if(subject.length() > 100)
-							continue;
+						// to be removed later
+						if(subject.length() > 200)
+							toProcess = false;
 					}
 					else if (nodes[0] instanceof BNode) {
 						subject = ((BNode)nodes[0]).toString();
-						continue;
+						// to be removed later
+						toProcess = false;
 					}
 					else 
 						log.error("subject is neither a resource nor a bnode");
@@ -82,8 +98,9 @@ public class NxImporter extends Importer {
 					
 					if (nodes[2] instanceof Resource) {
 						object = ((Resource)nodes[2]).toString();
-						if(object.length() > 100)
-							continue;
+						// to be removed later
+						if(object.length() > 200)
+							toProcess = false;
 						if(property.equals(RDF.TYPE.stringValue()) && 
 								!(object.startsWith(RDF.NAMESPACE) || object.startsWith(RDFS.NAMESPACE) || 
 										object.startsWith(OWL.NAMESPACE) || object.startsWith(XMLSchema.NAMESPACE))) {
@@ -100,12 +117,16 @@ public class NxImporter extends Importer {
 					else if (nodes[2] instanceof BNode) {
 						object = ((BNode)nodes[2]).toString();
 						type = Environment.OBJECT_PROPERTY;
-						continue;
+						// to be removed later
+						toProcess = false;
 					}
 					else if (nodes[2] instanceof Literal) {
 						object = ((Literal)nodes[2]).getData();
+						if(object.startsWith("http"))
+							toProcess = false;
+						// to be removed later
 						if(object.length() > 50)
-							continue;
+							toProcess = false;
 						if((property.startsWith(RDF.NAMESPACE) || property.startsWith(RDFS.NAMESPACE) || 
 								property.startsWith(OWL.NAMESPACE) || property.startsWith(XMLSchema.NAMESPACE))) {
 							type = Environment.RDFS_PROPERTY;
@@ -128,9 +149,28 @@ public class NxImporter extends Importer {
 					else
 						ds = new File(file).getName();
 					
-					m_sink.triple(subject, property, object, ds, type);
+					if(dataSources != null && dataSources.size() != 0) {
+						if(dataSources.contains(ds)) {
+							triples++;
+							if(toProcess == true) {
+								m_sink.triple(subject, property, object, ds, type);
+							}
+							else {
+								m_sink.triple(subject, property, object, ds, Environment.UNPROCESSED);
+							}
+						}
+					} 
+					else {
+						triples++;
+						if(toProcess == true) {
+							m_sink.triple(subject, property, object, ds, type);
+						}
+						else {
+							m_sink.triple(subject, property, object, ds, Environment.UNPROCESSED);
+						}
+					}
 					
-					triples++;
+					
 					if (triples % 1000000 == 0)
 						log.debug("triples imported: " + triples);
 				}
@@ -197,5 +237,4 @@ public class NxImporter extends Importer {
 	     }
 	     return result;
 	}
-
 }
