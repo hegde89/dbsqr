@@ -422,7 +422,11 @@ public class LineSortFile extends File {
 		copyTo(getFileFullName() + ".bak", true);
 	}
 
-
+	public static void main(String args[]) throws IOException {
+		LineSortFile lsf = new LineSortFile("d:/zl/BTC/semplore_index/iswc10/data/hashdata","d:/zl/BTC/semplore_index/iswc10/data/hashdata.sort");
+		lsf.setDeleteWhenStringRepeated(true);
+		lsf.sortFile();
+	}  
 
 
 
