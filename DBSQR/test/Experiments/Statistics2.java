@@ -28,23 +28,23 @@ public class Statistics2 {
 
 	private static Logger log = Logger.getLogger(Statistics2.class);
 
-	private static int from = 2000;
-	private static int end = 10000;
+	private static int from = 500000;
+	private static int end = 1000000;
 
 	public static void main(String[] args) throws IOException, ParseException {
 		long start = System.currentTimeMillis();
 	
-		BufferedReader reader = new BufferedReader(new FileReader("d://Test/data_test_btc/statistics/ds"));	
+		BufferedReader reader = new BufferedReader(new FileReader("d://dbsqr/test329_pruned/ds_info"));	
 		Set<String> dataSources = new HashSet<String>();
 		String line;
 		int size = 0;
 		while((line = reader.readLine()) != null){
 			String[] str = line.split("\t");
-			if(str.length == 2) {
-				int num = Integer.valueOf(str[1]);
+			if(str.length == 3) {
+				int num = Integer.valueOf(str[2]);
 				if(num < end && num >= from) {
 					size += num;
-					dataSources.add(str[0]);
+					dataSources.add(str[1]);
 				}	
 			}
 		}

@@ -23,25 +23,27 @@ public class LoadDataService {
 		Config.setConfigFilePath("./res/config/config.cfg");
 		Config config = Config.getConfig();
 		Timing timing = new Timing(config.getTemporaryDirectory() + config.getDbName() + "/log");
+		timing.init(156);
 
 		DBIndexService indexBuilder = new DBIndexService(config, timing);
 //		indexBuilder.createTripleTable();
 //		indexBuilder.createDatasourceTable();
 //		indexBuilder.createSchemaTable();
 //		indexBuilder.createEntityTable();
-//		indexBuilder.createKeywordEntityLuceneIndex();
+		indexBuilder.createKeywordEntityLuceneIndex();
 //		indexBuilder.createCompleteKeywordTable();
 //		indexBuilder.createEntityRelationTable();
-//		for (int i = 2; i <= 3; i++) {
+//		for (int i = 2; i <= 4; i++) {
 //			indexBuilder.createEntityRelationTable(i);
 //		}
-		indexBuilder.createKeywordConceptConnectionTable();
+//		indexBuilder.createKeywordConceptConnectionTable();
 		indexBuilder.close();
 		
 		timing.logStats();
 		long end = System.currentTimeMillis();
 		log.info("Total Time customing: " + (double) (end - start) / (double) 1000 + "(sec)");
-		log.info("Total Time customing: " + (double) (end - start) / (double) 60000 + "(min)\n");
+		log.info("Total Time customing: " + (double) (end - start) / (double) 60000 + "(min)");
+		log.info("Total Time customing: " + (double) (end - start) / (double) 3600000 + "(h)\n");
 	}
 	
 }

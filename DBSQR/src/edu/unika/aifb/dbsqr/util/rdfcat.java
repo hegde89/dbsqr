@@ -25,6 +25,10 @@ package edu.unika.aifb.dbsqr.util;
 // Imports
 ///////////////
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.*;
 
@@ -239,7 +243,7 @@ public class rdfcat
     // External signature methods
     //////////////////////////////////
 
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws FileNotFoundException {
         new rdfcat().go( args );
     }
 
@@ -247,7 +251,7 @@ public class rdfcat
     //////////////////////////////////
 
     /* main loop */
-    protected void go( String[] args ) {
+    protected void go( String[] args ) throws FileNotFoundException {
         m_cmdLine.process( args );
 
         // process any stored items
@@ -259,7 +263,7 @@ public class rdfcat
         }
 
         // generate the output
-        m_model.write( getOutputStream(), m_outputFormat );
+        m_model.write( new BufferedOutputStream(new FileOutputStream("d:/zl/BTC/out.nt")), m_outputFormat );
     }
 
     /** Set the input language of next and subsequent reads */

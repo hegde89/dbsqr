@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -92,11 +93,11 @@ public class DBIndexService {
 				if (subfilePath.contains(".nq") || subfilePath.contains(".nt")) {
 					Importer importer = m_importers.get(Environment.NQUADS);
 					if (importer == null) {
-						Collection<String> dataSources = getAllowedDataSources();
-						if(dataSources != null) { 
-							importer = new NxImporter(dataSources);
-						}	
-						else 
+//						Collection<String> dataSources = getAllowedDataSources();
+//						if(dataSources != null) { 
+//							importer = new NxImporter(dataSources);
+//						}	
+//						else 
 							importer = new NxImporter();
 						m_importers.put(Environment.NQUADS, importer);
 					}
@@ -202,7 +203,7 @@ public class DBIndexService {
 				stmt.close();
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating triple table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		} 
 		
 		log.info("-------------------- Importing Triples into Triple Table --------------------");
@@ -269,7 +270,7 @@ public class DBIndexService {
 			log.info("Time for Creating Datasource Table: " + (double)(end - start)/(double)1000 + "(sec)\n");
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating datasource table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		}  
 	} 
 	
@@ -354,7 +355,7 @@ public class DBIndexService {
 			log.info("Time for Creating Schema Table: " + (double)(end - start)/(double)1000 + "(sec)\n");
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating schema table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		}  
 	}
 	
@@ -441,16 +442,19 @@ public class DBIndexService {
 			log.info("Time for Creating Entity Table: " + (double)(end - start)/(double)1000 + "(sec)\n");
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating entity table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		} 
 	} 
 	
 	public void createEntityRelationTable() {
 		Statement stmt = m_dbService.createStatement();
         String R_1_ = Environment.ENTITY_RELATION_TABLE + 1 + "_"; 
-        int maxDsId = getMaxDataSourceId();
-        m_timing.init(maxDsId);
+        int maxDsId = getMaxDsId();
         int id = 1;
+        
+        Timing timing = new Timing(m_config.getTemporaryDirectory() + m_config.getDbName() + "/log_er_1");
+        timing.init(156);
+        
         try {
         	while(id <= maxDsId) {
         		long start = System.currentTimeMillis();
@@ -468,12 +472,10 @@ public class DBIndexService {
 						Environment.ENTITY_RELATION_VID_COLUMN + ")) " + 
 					"ENGINE=MyISAM";
 				stmt.execute(createSql);
+				stmt.execute("flush tables");
 				
-//				stmt.execute("alter table " + R_1 + " add index (" + Environment.ENTITY_RELATION_UID_COLUMN + ")");
-//            	stmt.execute("alter table " + R_1 + " add index (" + Environment.ENTITY_RELATION_VID_COLUMN + ")");
-//            	stmt.execute("alter table " + R_1 + " add index (" + Environment.ENTITY_RELATION_IGNORED_COLUMN + ")");
-				
-				stmt.execute("alter table " + R_1 + " add index (" + Environment.ENTITY_RELATION_UID_COLUMN + ")," + 
+				stmt.execute("alter table " + R_1 + 
+						" add index (" + Environment.ENTITY_RELATION_UID_COLUMN + ")," + 
 						" add index (" + Environment.ENTITY_RELATION_VID_COLUMN + ")," +
 						" add index (" + Environment.ENTITY_RELATION_IGNORED_COLUMN + ")");
 				
@@ -531,20 +533,22 @@ public class DBIndexService {
      			log.info("Time for Creating Entity Relation Table of data source " + id + " " +
      					(double)(end - start)/(double)1000 + "(sec)\n");
      			m_timing.add(id, end-start);
+     			timing.add(id, end-start);
      			
      			stmt.execute("flush tables");
      			id++;
         	}
+        	timing.logStats();
 			
 			if(stmt != null)
             	stmt.close();
             
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating entity relation table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		} catch (IOException ex) {
 			log.warn("A warning in the process of creating entity relation table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		}  
 	} 
 	
@@ -555,9 +559,12 @@ public class DBIndexService {
         // To avoid entity relationship explosion for large distance
         boolean ignored = distance >= Environment.THRESHOLD_DISTANCE_PRUNED ? true : false;  
         
-        int maxDsId = getMaxDataSourceId();
-        m_timing.init(maxDsId);
+        int maxDsId = getMaxDsId();
 		int id = 1;	
+		
+		Timing timing = new Timing(m_config.getTemporaryDirectory() + m_config.getDbName() + "/log_er_" + distance);
+        timing.init(156);
+		
         try {
         	while(id <= maxDsId) {
         		long start = System.currentTimeMillis();
@@ -575,11 +582,10 @@ public class DBIndexService {
 						Environment.ENTITY_RELATION_VID_COLUMN + ")) " + 
 						"ENGINE=MyISAM";
         		stmt.execute(createSql);
-//				stmt.execute("alter table " + R_d + " add index (" + Environment.ENTITY_RELATION_UID_COLUMN + ")");
-//        		stmt.execute("alter table " + R_d + " add index (" + Environment.ENTITY_RELATION_VID_COLUMN + ")");
-//        		stmt.execute("alter table " + R_d + " add index (" + Environment.ENTITY_RELATION_IGNORED_COLUMN + ")");
+        		stmt.execute("flush tables");
         		
-        		stmt.execute("alter table " + R_d + " add index (" + Environment.ENTITY_RELATION_VID_COLUMN + "), " +
+        		stmt.execute("alter table " + R_d + " " +
+        				" add index (" + Environment.ENTITY_RELATION_VID_COLUMN + "), " +
         				" add index (" + Environment.ENTITY_RELATION_IGNORED_COLUMN + ")");
 			
         		log.info("-------------------- Populating Entity Relation Table of Data Source " + id + " at distance " + distance + " --------------------");
@@ -778,10 +784,13 @@ public class DBIndexService {
     			log.info("Time for Creating Entity Relation Table of Data Source " + id + " at distance " + distance + ": " + 
     					(double)(end - start)/(double)60000 + "(min)\n");
     			m_timing.add(id, end-start);
+    			timing.add(id, end-start);
     			
     			stmt.execute("flush tables");
     			id++;
         	}
+        	
+        	timing.logStats();
         	
 			if(stmt != null)
 				stmt.close();
@@ -789,7 +798,7 @@ public class DBIndexService {
 			System.gc();
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating entity relation table at distance " + distance + ":");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		}  
 	} 
 	
@@ -856,6 +865,7 @@ public class DBIndexService {
 			
 			int entityId = 1;
 			int maxEntityId = getMaxEntityId();
+			int maxDsId = getMaxDsId();
 			while(entityId <= maxEntityId) {
 				if(entityId % 10000 == 0)
 					log.debug("Processed Entities: " + entityId);
@@ -872,6 +882,11 @@ public class DBIndexService {
 				}
 				if(rsEntity != null)
 					rsEntity.close();
+				
+				if(dsId > maxDsId) {
+					entityId++;
+					continue;
+				}
 				
 //				String terms = trucateUri(entityUri) + " ";
 				StringBuffer terms = new StringBuffer(); 
@@ -900,7 +915,7 @@ public class DBIndexService {
 				
 				Document doc = new Document();
 				doc.add(new Field(Environment.FIELD_ENTITY_ID, Integer.toString(entityId), 
-						Field.Store.YES, Field.Index.NO));
+						Field.Store.YES, Field.Index.NOT_ANALYZED));
 				doc.add(new Field(Environment.FIELD_CONCEPT_ID, Integer.toString(conceptId), 
 						Field.Store.YES, Field.Index.NOT_ANALYZED));
 				doc.add(new Field(Environment.FIELD_DS_ID, Integer.toString(dsId), 
@@ -909,7 +924,7 @@ public class DBIndexService {
 						Field.Store.YES, Field.Index.NOT_ANALYZED));
 				if(!terms.equals(""))
 					doc.add(new Field(Environment.FIELD_TERM_LITERAL, terms.toString(), 
-							Field.Store.NO, Field.Index.ANALYZED_NO_NORMS));
+							Field.Store.YES, Field.Index.ANALYZED_NO_NORMS));
 				iwriter.addDocument(doc);
 				
 				entityId++;
@@ -928,13 +943,11 @@ public class DBIndexService {
 			
 			long end = System.currentTimeMillis();
 			log.info("Time for Creating Keyword Index: " + (double)(end - start)/(double)1000 + "(sec)\n");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
+			log.warn("A warning in the process of creating keyword index in lucene.");
+			log.warn(e.getMessage() + "\n");
 			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 	}
 	
 	public void createCompleteKeywordTable() {
@@ -950,7 +963,7 @@ public class DBIndexService {
 				// It might be entity id or keyword id, therefore not unique.    
 				Environment.COMPLETE_ID_COLUMN + " int unsigned not null, " + 
 				Environment.COMPLETE_KEYWORD_COLUMN + " varchar(100) not null primary key, " + 
-				// compound -- appears only in one entity; single -- appears in more than one entity
+				// single : 0 -- appears in more than one entity; compound : 1 -- appears only in one entity; 
 				Environment.COMPLETE_TYPE_COLUMN + " tinyint unsigned not null, " +  
 				Environment.COMPLETE_FREQ_COLUMN + " smallint unsigned not null) " + 
 				"ENGINE=MyISAM";
@@ -996,6 +1009,8 @@ public class DBIndexService {
 			// For Test
 			PrintWriter pw_k = new PrintWriter(m_config.getTemporaryDirectory() + "/" + 
 				m_config.getDbName() +  "/keyword." + m_config.getDbName()); 
+			PrintWriter pw_k_inv = new PrintWriter(m_config.getTemporaryDirectory() + "/" + 
+					m_config.getDbName() +  "/keyword_invalid." + m_config.getDbName()); 
 			Map<String,Integer> keyword_freq = new HashMap<String,Integer>();
 			PrintWriter pw_kf = new PrintWriter(m_config.getTemporaryDirectory() + "/" + 
 				m_config.getDbName() +  "/keyword_freq." + m_config.getDbName()); 
@@ -1003,15 +1018,22 @@ public class DBIndexService {
 			int numKeyw = 0;
 			int keywordId = 0;
 			TermEnum tEnum = ireader.terms();
+			
 			while(tEnum.next()) {
 				
 				Term term = tEnum.term();
 				int docFreq = tEnum.docFreq();
 				String text = term.text();
 				
-				// to be removed later
-				if(!containsOnlyLetters(text))
+				if(term.field() != Environment.FIELD_TERM_LITERAL)
 					continue;
+				
+				// might be removed later
+				if( text.length() > 12 || !toProcess(text)) {
+					pw_k_inv.print(text + "\t docFreq: " + docFreq);
+					pw_k_inv.println();
+					continue;
+				}	
 				
 				numKeyw++;
 				// For Test
@@ -1035,7 +1057,7 @@ public class DBIndexService {
 						psInsertKeyw.executeUpdate();
 					}
 				}
-				else if(docFreq < 65535) {
+				else if(docFreq <= Environment.THRESHOLD_KEYWORD_FREQ) {
 					keywordId++;
 					psInsertKeyw.setInt(1, keywordId);
 					psInsertKeyw.setString(2, text);
@@ -1071,19 +1093,90 @@ public class DBIndexService {
 			}
 			pw_k.close();
 			pw_kf.close();
-
+			pw_k_inv.close();
+			
+			if(psInsertKeywEntity != null)
+				psInsertKeywEntity.close();
+			if(psInsertKeyw != null)
+				psInsertKeyw.close();
+			if(stmt != null)
+				stmt.close();
+			
 			long end = System.currentTimeMillis();
 			log.info("Time for Creating Keyword Entity Inclusion Table and Complete Keyword Table: " + 
 					(double) (end - start) / (double)1000  + "(sec)\n");
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating keyword entity inclusion table and complete keyword table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}  
 	}
 
+	public void createKeywordSourceInclusionTable() {
+		log.info("-------------------- Creating Keyword Data Source Inclusion Table --------------------");
+		long start = System.currentTimeMillis();
+		
+		Statement stmt = m_dbService.createStatement();
+		try {
+			if (m_dbService.hasTable(Environment.KEYWORD_DS_INCLUSION_TABLE)) {
+				stmt.execute("drop table " + Environment.KEYWORD_DS_INCLUSION_TABLE);
+			}
+			String createSql = "create table " + Environment.KEYWORD_DS_INCLUSION_TABLE + "( " + 
+				// It might be entity id or keyword id, therefore not unique. 
+				Environment.KEYWORD_DS_INCLUSION_KEYWORD_ID_COLUMN + " int unsigned not null, " + 
+				Environment.KEYWORD_DS_INCLUSION_DS_ID_COLUMN + " smallint unsigned not null, " + 
+				Environment.KEYWORD_DS_INCLUSION_SCORE_COLUMN + " float unsigned not null, " +
+				// single : 0 -- appears in more than one entity; compound : 1 -- appears only in one entity; 
+				Environment.KEXWORD_DS_INCLUSION_TYPE_COLUMN + " tinyint unsigned not null, " +  
+				"primary key(" + Environment.KEYWORD_DS_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+				Environment.KEXWORD_DS_INCLUSION_TYPE_COLUMN + ", " + 
+				Environment.KEYWORD_DS_INCLUSION_DS_ID_COLUMN + ")) " + 
+				"ENGINE=MyISAM";
+			stmt.execute(createSql);
+			stmt.execute("alter table " + Environment.KEYWORD_DS_INCLUSION_TABLE + 
+					" add index (" + Environment.KEYWORD_DS_INCLUSION_KEYWORD_ID_COLUMN + ")");
+			stmt.execute("alter table " + Environment.KEYWORD_DS_INCLUSION_TABLE + 
+					" add index (" + Environment.KEXWORD_DS_INCLUSION_TYPE_COLUMN + ")");
+			
+			log.info("-------------------- Populating Keyword Data Source Inclusion Table --------------------");
+			// Statement for Keyword Data Source Inclusion Table
+			String insertSql = "insert into " + Environment.KEYWORD_DS_INCLUSION_TABLE + 
+				" select " + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+					Environment.ENTITY_DS_ID_COLUMN + ", " + 
+					"sum(" + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + "), " +
+					Environment.TERM_SINGLE + 
+				" from " + Environment.KEYWORD_ENTITY_INCLUSION_TABLE + ", " + 
+					Environment.ENTITY_TABLE + 
+				" where " + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+					Environment.ENTITY_ID_COLUMN + 
+				" group by " + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+					Environment.ENTITY_DS_ID_COLUMN; 
+			stmt.execute(insertSql);
+			
+			int maxEntityId = getMaxEntityId();
+			float compoundKeywordScore = (float)(2*Math.log(maxEntityId + 1));
+			insertSql = "insert into " + Environment.KEYWORD_DS_INCLUSION_TABLE + 
+				" select " + Environment.ENTITY_ID_COLUMN + ", " + 
+					Environment.ENTITY_DS_ID_COLUMN + ", " + 
+					compoundKeywordScore + ", " +
+					Environment.TERM_COMPOUND + 
+				" from " + Environment.ENTITY_TABLE; 
+			stmt.execute(insertSql);
+
+			if(stmt != null)
+            	stmt.close();
+			
+			long end = System.currentTimeMillis();
+			log.info("Time for Creating Keyword Data Source Inclusion Table : " + 
+					(double) (end - start) / (double)1000  + "(sec)\n");
+		} catch (SQLException ex) {
+			log.warn("A warning in the process of creating keyword data source inclusion table :");
+			log.warn(ex.getMessage() + "\n");
+		} 
+	}
+	
 	public void createKeywordConceptConnectionTable() {
 		log.info("-------------------- Creating Keyword Concept Connection Table --------------------");
 		long start = System.currentTimeMillis();
@@ -1103,7 +1196,8 @@ public class DBIndexService {
 				Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + " smallint unsigned not null, " + 
 				Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + " smallint unsigned not null, " +
 				Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " float unsigned not null, " + 
-				Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN + " tinyint(1) unsigned not null, " + // 0: sc; 1: ss; 2: cc
+				// 0: sc; 1: ss; 2: cc
+				Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN + " tinyint(1) unsigned not null, " + 
 				"primary key("	+ Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
 					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
 					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
@@ -1117,6 +1211,7 @@ public class DBIndexService {
 			int maxEntityId = getMaxEntityId();
 			
 			String insertSql = "insert into " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + " ";
+			String insertIgnoreSql = "insert ignore into " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + " ";
 			String onUpdateSql = " on duplicate key update " + 
 				Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " = " + 
 				Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " + " + 
@@ -1184,8 +1279,8 @@ public class DBIndexService {
 				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
 				"sum( 2*" + compoundKeywordScore + "), " + 
 				Environment.TERM_PAIR_COMPOUND_COMPOUND + // compound keyword and compound keyword -- entity id and entity id 
-				" from " + Environment.ENTITY_TABLE + " as E " + 
-				" group by " + "E." + Environment.ENTITY_ID_COLUMN;  
+				" from " + Environment.ENTITY_TABLE + " as E ";
+//				" group by " + "E." + Environment.ENTITY_ID_COLUMN;  
 			t1 = System.currentTimeMillis();
 			numConnection += stmt.executeUpdate(insertSql + selectSql);
 			t2 = System.currentTimeMillis();
@@ -1195,8 +1290,9 @@ public class DBIndexService {
 			
 			// Keyword Concept Connection at distance from 1 to maximum distance
 			int maxDistance = m_config.getMaxDistance();
-			int maxDsId = getMaxDataSourceId();
-			for(int i = 1; i <= maxDistance; i++) {
+			int maxDsId = getMaxDsId();
+			long t11, t12;
+			for(int i = 4; i <= 4; i++) {
 				String R_i_ = R + i + "_";
 				
 				// single keyword and compound keyword at distance i
@@ -1217,10 +1313,15 @@ public class DBIndexService {
 					"ENGINE=MyISAM";
 				stmt.execute(createSql);
 				
+				stmt.execute("alter table " + temp_sc + 
+						" add index (" + Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + ")");
+//				stmt.execute("alter table " + temp_sc + 
+//						" add index (" + Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + ")");
+				
 				String insertSqlTemp = "insert into " + temp_sc + " ";
 				int num = 0;
 				int id = 1;
-				while (id <= 194){
+				while (id <= maxDsId){
 					String R_i = R_i_ + id; 
 					
 					selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
@@ -1241,19 +1342,22 @@ public class DBIndexService {
 							"E1." + Environment.ENTITY_ID_COLUMN + 
 						" and " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + " = " + 
 							"E2." + Environment.ENTITY_ID_COLUMN + 
-						" and " + "E1." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
+//						" and " + "E1." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
 //						" and " + "E2." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
 						" group by " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 	
 							"ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
 							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN;  
+					t11 = System.currentTimeMillis();
 					num += stmt.executeUpdate(insertSqlTemp + selectSql);
-					log.debug("Part 1 of data source " + id + ": " + num);
-					
+					t12 = System.currentTimeMillis();
+					log.info("SC_temp_" + i + " part 1 of data source " + id + ": " + num + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
 					id++;
 				}
 				id = 1;
 				num = 0; 
-				while (id <= 194){
+				while (id <= maxDsId){
 					String R_i = R_i_ + id; 
 					
 					selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
@@ -1274,14 +1378,18 @@ public class DBIndexService {
 							"E1." + Environment.ENTITY_ID_COLUMN + 
 						" and " + "ER." + Environment.ENTITY_RELATION_VID_COLUMN + " = " + 
 							"E2." + Environment.ENTITY_ID_COLUMN + 
-						" and " + "E1." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
+//						" and " + "E1." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
 //						" and " + "E2." + Environment.ENTITY_DS_ID_COLUMN + " = " + id +
 						" group by " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 	
 							"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " + 
-							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN;  
+							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN; 
+					t11 = System.currentTimeMillis();
 					num += stmt.executeUpdate(insertSqlTemp + selectSql);
-					log.debug("Part 2 of data source " + id + ": " + num);
-				
+					t12 = System.currentTimeMillis();
+					log.info("SC_temp_" + i + " part 2 of data source " + id + ": " + num + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
+					
 					id++;
 				}
 				t2 = System.currentTimeMillis();
@@ -1308,13 +1416,9 @@ public class DBIndexService {
 						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
 					
 				// single keyword and single keyword at distance i
-				String temp_ss = "temp_table_ss";
-				if (m_dbService.hasTable(temp_ss)) {
-					stmt.execute("drop table " + temp_ss);
-				}
 				t1 = System.currentTimeMillis();
 				id = 1;
-				while (id <= 194){
+				while (id <= maxDsId){
 					selectSql = " select " + "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
 						"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " +
 						"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
@@ -1337,7 +1441,12 @@ public class DBIndexService {
 							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
 							"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
 							"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN;  
+					t11 = System.currentTimeMillis();
 					numConnection += stmt.executeUpdate(insertSql + selectSql + onUpdateSql);
+					t12 = System.currentTimeMillis();
+					log.info("SS_" + i + " data source " + id + ": " + numConnection + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
 					
 					id++;
 				}
@@ -1352,7 +1461,7 @@ public class DBIndexService {
 				// compound keyword and compound keyword at distance i  
 				t1 = System.currentTimeMillis();
 				id = 1;
-				while (id <= 194){
+				while (id <= maxDsId){
 					String R_i = R_i_ + id;
 					selectSql = " select " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " +
 						"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " +
@@ -1371,7 +1480,12 @@ public class DBIndexService {
 							"E2." + Environment.ENTITY_ID_COLUMN; 
 //						" group by " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
 //							"ER." + Environment.ENTITY_RELATION_VID_COLUMN;
-					numConnection += stmt.executeUpdate(insertSql + selectSql + onUpdateSql);
+					t11 = System.currentTimeMillis();
+					numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+					t12 = System.currentTimeMillis();
+					log.info("CC_" + i + " data source " + id + ": " + numConnection + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
 					
 					id++;
 				}
@@ -1396,325 +1510,415 @@ public class DBIndexService {
 					(double)(end - start)/(double)1000 + "(sec)\n");
 		} catch (SQLException ex) {
 			log.warn("A warning in the process of creating keyword concept connection table:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		} 
 	} 
 	
-//	public void createKeywordConceptConnectionTable() {
-//		log.info("-------------------- Creating Keyword Concept Connection Table --------------------");
-//		long start = System.currentTimeMillis();
-//		
-//        Statement stmt = m_dbService.createStatement();
-//        String R = Environment.ENTITY_RELATION_TABLE; 
-//        try {
-//        	// Create Keyword Concept Connection Table 
-//			if (m_dbService.hasTable(Environment.KEYWORD_CONCEPT_CONNECTION_TABLE)) {
-//				stmt.execute("drop table " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE);
-//			}
-//			String createSql = "create table " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + "( " + 
-//				Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + " int unsigned not null, " + 
-//				Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + " int unsigned not null, " +
-//				Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + " mediumint unsigned not null, " + 
-//				Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN + " mediumint unsigned not null, " +
-//				Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + " smallint unsigned not null, " + 
-//				Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + " smallint unsigned not null, " +
-//				Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " float unsigned not null, " + 
-//				Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN + " tinyint(1) unsigned not null, " + // 0: sc; 1: ss; 2: cc
-//				"primary key("	+ Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN +  ", " +
-//					Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN + ")) " + 
-//				"ENGINE=MyISAM";
-//			stmt.execute(createSql);
-//			
-//			log.info("-------------------- Populating Keyword Concept Connection Table --------------------");
-//			// Populate Keyword Concept Connection Table 
-//			int maxEntityId = getMaxEntityId();
-//			
-//			String insertSql = "insert into " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + " ";
+	public void createKeywordSourceConnectionTable() {
+		log.info("-------------------- Creating Keyword Data Source Connection Table --------------------");
+		long start = System.currentTimeMillis();
+		
+        Statement stmt = m_dbService.createStatement();
+        try {
+        	// Create Keyword Data Source Connection Table 
+			if (m_dbService.hasTable(Environment.KEYWORD_DS_CONNECTION_TABLE)) {
+				stmt.execute("drop table " + Environment.KEYWORD_DS_CONNECTION_TABLE);
+			}
+			String createSql = "create table " + Environment.KEYWORD_DS_CONNECTION_TABLE + "( " + 
+				Environment.KEYWORD_DS_CONNECTION_KEYWORD_UID_COLUMN + " int unsigned not null, " + 
+				Environment.KEYWORD_DS_CONNECTION_KEYWORD_VID_COLUMN + " int unsigned not null, " +
+				Environment.KEYWORD_DS_CONNECTION_DS_UID_COLUMN + " smallint unsigned not null, " + 
+				Environment.KEYWORD_DS_CONNECTION_DS_VID_COLUMN + " smallint unsigned not null, " +
+				Environment.KEYWORD_DS_CONNECTION_SCORE_COLUMN + " float unsigned not null, " + 
+				// 0: sc; 1: ss; 2: cc
+				Environment.KEYWORD_DS_CONNECTION_TYPE_COLUMN + " tinyint(1) unsigned not null, " + 
+				"primary key("	+ Environment.KEYWORD_DS_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+					Environment.KEYWORD_DS_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
+					Environment.KEYWORD_DS_CONNECTION_DS_UID_COLUMN + ", " + 
+					Environment.KEYWORD_DS_CONNECTION_DS_VID_COLUMN +  ", " +
+					Environment.KEYWORD_DS_CONNECTION_TYPE_COLUMN + ")) " + 
+				"ENGINE=MyISAM";
+			stmt.execute(createSql);
+			
+			log.info("-------------------- Populating Keyword Entity Connection Table --------------------");
+			// Populate Keyword Data Source Connection Table 
+			
+			String insertSql = "insert into " + Environment.KEYWORD_DS_CONNECTION_TABLE + 
+				" select " + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
+					Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + ", " +
+					Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + ", " +
+					"sum(" + Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + "), " + 
+					Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN + 
+				" from " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + 
+				" group by " + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
+					Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + ", " +
+					Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + ", " +
+					Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN; 
+			stmt.execute(insertSql);
+			
+			stmt.execute("alter table " + Environment.KEYWORD_DS_CONNECTION_TABLE + 
+				" DROP PRIMARY KEY");
+			stmt.execute("alter table " + Environment.KEYWORD_DS_CONNECTION_TABLE + 
+				" add index (" + Environment.KEYWORD_DS_CONNECTION_KEYWORD_UID_COLUMN + ", " +
+							Environment.KEYWORD_DS_CONNECTION_KEYWORD_VID_COLUMN + ", " +
+							Environment.KEYWORD_DS_CONNECTION_TYPE_COLUMN + ")");
+			
+			if(stmt != null)
+            	stmt.close();
+            
+            long end = System.currentTimeMillis();
+			log.info("Time for Creating Keyword Data Source Connection Table: " + 
+					(double)(end - start)/(double)1000 + "(sec)\n");
+		} catch (SQLException ex) {
+			log.warn("A warning in the process of creating keyword data source connection table:");
+			log.warn(ex.getMessage() + "\n");
+		} 
+	}
+	
+	public void createKeywordEntityConnectionTable() {
+		log.info("-------------------- Creating Keyword Entity Connection Table --------------------");
+		long start = System.currentTimeMillis();
+		
+        Statement stmt = m_dbService.createStatement();
+        String R = Environment.ENTITY_RELATION_TABLE; 
+        try {
+        	// Create Keyword Entity Connection Table 
+			if (m_dbService.hasTable(Environment.KEYWORD_ENTITY_CONNECTION_TABLE)) {
+				stmt.execute("drop table " + Environment.KEYWORD_ENTITY_CONNECTION_TABLE);
+			}
+			String createSql = "create table " + Environment.KEYWORD_ENTITY_CONNECTION_TABLE + "( " + 
+				Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + " int unsigned not null, " + 
+				Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + " int unsigned not null, " +
+				Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + " int unsigned not null, " + 
+				Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN + " int unsigned not null, " +
+				Environment.KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN + " smallint unsigned not null, " + 
+				Environment.KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN + " smallint unsigned not null, " +
+				Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + " float unsigned not null, " + 
+				// 0: sc; 1: ss; 2: cc
+				Environment.KEYWORD_ENTITY_CONNECTION_TYPE_COLUMN + " tinyint(1) unsigned not null, " + 
+				"primary key("	+ Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + ", " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN +  ", " +
+					Environment.KEYWORD_ENTITY_CONNECTION_TYPE_COLUMN + ")) " + 
+				"ENGINE=MyISAM";
+			stmt.execute(createSql);
+			
+			log.info("-------------------- Populating Keyword Entity Connection Table --------------------");
+			// Populate Keyword E Connection Table 
+			int maxEntityId = getMaxEntityId();
+			
+//			String insertSql = "insert into " + Environment.KEYWORD_ENTITY_CONNECTION_TABLE + " ";
+			String insertIgnoreSql = "insert ignore into " + Environment.KEYWORD_ENTITY_CONNECTION_TABLE + " ";
 //			String onUpdateSql = " on duplicate key update " + 
-//				Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " = " + 
+//				Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + " = " + 
 //				Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " + " + 
 //				"VALUES(" + Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + ")"; 
-//			String selectSql;
-//			float compoundKeywordScore = (float)(2*Math.log(maxEntityId + 1));
-//			
-//			int numConnection = 0;
-//			// Keyword Concept Connection at distance 0 
-//			// single keyword and compound keyword at distance 0
-//			selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//				"KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + ", " +
-//				"E." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " +  
-//				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//				"sum(" + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + " + " + compoundKeywordScore + ") " + ", " + 
-//				Environment.TERM_PAIR_SINGLE_COMPOUND + // single keyword and compound keyword -- keyword id and entity id
-//				" from " + Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE, " + 
-//					Environment.ENTITY_TABLE + " as E " +
-//				" where " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//					"E." + Environment.ENTITY_ID_COLUMN + 
-//				" group by " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 	
-//					"KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN;  
-//			long t1 = System.currentTimeMillis();
-//			numConnection += stmt.executeUpdate(insertSql + selectSql);
-//			long t2 = System.currentTimeMillis();
-//			log.info(numConnection + "\t single and compound keywords\t distance: " + 0 + "\t " + 
-//					"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//			
-//			// single keyword and single keyword at distance 0
-//			selectSql = " select " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//				"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " +  
-//				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//				"sum(" + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + " + " + 
-//					"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + ") " +  ", " +
-//				Environment.TERM_PAIR_SINGLE_SINGLE + // single keyword and single keyword -- keyword id and keyword id
-//				" from " + Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE1, " + 
-//					Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE2, " +			
-//					Environment.ENTITY_TABLE + " as E " +
-//				" where " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//					"E." + Environment.ENTITY_ID_COLUMN + 
-//				" and " + "KE2." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//					"E." + Environment.ENTITY_ID_COLUMN + 
-//				" and " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + " < " + 
-//					"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + 
-//				" group by " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//					"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//					"E." + Environment.ENTITY_CONCEPT_ID_COLUMN;  
-//			t1 = System.currentTimeMillis();
-//			numConnection += stmt.executeUpdate(insertSql + selectSql);
-//			t2 = System.currentTimeMillis();
-//			log.info(numConnection + "\t single and single keywords\t distance: " + 0 + "\t " + 
-//					"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//			
-//			// compound keyword and compound keyword at distance 0 
-//			selectSql = " select " + "E." + Environment.ENTITY_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_ID_COLUMN + ", " +
-//				"E." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " +  
-//				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//				"sum( 2*" + compoundKeywordScore + "), " + 
-//				Environment.TERM_PAIR_COMPOUND_COMPOUND + // compound keyword and compound keyword -- entity id and entity id 
-//				" from " + Environment.ENTITY_TABLE + " as E " + 
+			String selectSql;
+			float compoundKeywordScore = (float)(2*Math.log(maxEntityId + 1));
+			
+			int numConnection = 0;
+			// Keyword Entity Connection at distance 0 
+			// single keyword and compound keyword at distance 0
+			selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+				"KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + ", " +
+				"E." + Environment.ENTITY_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_ID_COLUMN + ", " +  
+				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+				"sum(" + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + " + " + 
+					compoundKeywordScore + ") " + ", " + 
+				Environment.TERM_PAIR_SINGLE_COMPOUND + // single keyword and compound keyword -- keyword id and entity id
+				" from " + Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE, " + 
+					Environment.ENTITY_TABLE + " as E " +
+				" where " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+					"E." + Environment.ENTITY_ID_COLUMN + 
+				" group by " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 	
+					"KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN;  
+			long t1 = System.currentTimeMillis();
+			numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+			long t2 = System.currentTimeMillis();
+			log.info(numConnection + "\t single and compound keywords\t distance: " + 0 + "\t " + 
+					"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+			
+			// single keyword and single keyword at distance 0
+			selectSql = " select " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+				"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_ID_COLUMN + ", " +  
+				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+				"sum(" + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + " + " + 
+					"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + ") " +  ", " +
+				Environment.TERM_PAIR_SINGLE_SINGLE + // single keyword and single keyword -- keyword id and keyword id
+				" from " + Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE1, " + 
+					Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE2, " +			
+					Environment.ENTITY_TABLE + " as E " +
+				" where " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+					"E." + Environment.ENTITY_ID_COLUMN + 
+				" and " + "KE2." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+					"E." + Environment.ENTITY_ID_COLUMN + 
+				" and " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + " < " + 
+					"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + 
+				" group by " + "KE1." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+					"KE2." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+					"E." + Environment.ENTITY_ID_COLUMN;  
+			t1 = System.currentTimeMillis();
+			numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+			t2 = System.currentTimeMillis();
+			log.info(numConnection + "\t single and single keywords\t distance: " + 0 + "\t " + 
+					"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+			
+			// compound keyword and compound keyword at distance 0 
+			selectSql = " select " + "E." + Environment.ENTITY_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_ID_COLUMN + ", " +
+				"E." + Environment.ENTITY_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_ID_COLUMN + ", " +  
+				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+				"E." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+				"sum( 2*" + compoundKeywordScore + "), " + 
+				Environment.TERM_PAIR_COMPOUND_COMPOUND + // compound keyword and compound keyword -- entity id and entity id 
+				" from " + Environment.ENTITY_TABLE + " as E ";
 //				" group by " + "E." + Environment.ENTITY_ID_COLUMN;  
-//			t1 = System.currentTimeMillis();
-//			numConnection += stmt.executeUpdate(insertSql + selectSql);
-//			t2 = System.currentTimeMillis();
-//			log.info(numConnection + "\t compound and compound keywords\t distance: " + 0 + "\t " + 
-//					"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//			
-//			
-//			// Keyword Concept Connection at distance from 1 to maximum distance
-//			int maxDistance = m_config.getMaxDistance();
-//			int maxDsId = getMaxDataSourceId();
-//			for(int i = 1; i <= maxDistance; i++) {
-//				String R_i_ = R + i + "_";
-//				
-//				// single keyword and compound keyword at distance i
-//				t1 = System.currentTimeMillis();
-//				String temp_sc = "temp_table_sc";
-//				if (m_dbService.hasTable(temp_sc)) {
-//					stmt.execute("drop table " + temp_sc);
-//				}
-//				createSql = "create table " + temp_sc + "( " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + " int unsigned not null, " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + " int unsigned not null, " +
-//					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + " mediumint unsigned not null, " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN + " mediumint unsigned not null, " +
-//					Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + " smallint unsigned not null, " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + " smallint unsigned not null, " +
-//					Environment.KEYWORD_CONCEPT_CONNECTION_FREQ_COLUMN + " smallint unsigned not null, " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " float unsigned not null) " + 
-//					"ENGINE=MyISAM";
-//				stmt.execute(createSql);
-//				
-//				String insertSqlTemp = "insert into " + temp_sc + " ";
-//				int num = 0;
-//				int id = 1;
-//				while (id <= 194){
-//					String R_i = R_i_ + id; 
-//					
-//					selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//							"ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
-//							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " + 
-//							"E2." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " +  
-//							"E1." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//							"E2." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//							"count(*), " + 
+			t1 = System.currentTimeMillis();
+			numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+			t2 = System.currentTimeMillis();
+			log.info(numConnection + "\t compound and compound keywords\t distance: " + 0 + "\t " + 
+					"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+			
+			
+			// Keyword Concept Connection at distance from 1 to maximum distance
+			int maxDistance = m_config.getMaxDistance();
+			int maxDsId = getMaxDsId();
+			long t11, t12;
+			for(int i = 4; i <= 4; i++) {
+				String R_i_ = R + i + "_";
+				
+				// single keyword and compound keyword at distance i
+				t1 = System.currentTimeMillis();
+				String temp_sc = "temp_table_sc";
+				if (m_dbService.hasTable(temp_sc)) {
+					stmt.execute("drop table " + temp_sc);
+				}
+				createSql = "create table " + temp_sc + "( " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + " int unsigned not null, " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + " int unsigned not null, " +
+					Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + " int unsigned not null, " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN + " int unsigned not null, " +
+					Environment.KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN + " smallint unsigned not null, " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN + " smallint unsigned not null, " +
+					Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + " float unsigned not null, " +
+					"primary key("	+ Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+						Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + ", " + 
+						Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + ", " + 
+						Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN +  ")) " +
+					"ENGINE=MyISAM";
+				stmt.execute(createSql);
+				
+				stmt.execute("alter table " + temp_sc + 
+						" add index (" + Environment.KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN + ")");
+				
+				String insertSqlTemp = "insert ignore into " + temp_sc + " ";
+				int num = 0;
+				int id = 1;
+				while (id <= maxDsId){
+					String R_i = R_i_ + id; 
+					
+					selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+							"ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
+							"E1." + Environment.ENTITY_ID_COLUMN + ", " + 
+							"E2." + Environment.ENTITY_ID_COLUMN + ", " +  
+							"E1." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+							"E2." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
 //							"sum(" + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + ") " +  
-//						" from " + R_i + " as ER, " + 
-//							Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE, " + 
-//							Environment.ENTITY_TABLE + " as E1, " + 
-//							Environment.ENTITY_TABLE + " as E2 " +
-//						" where " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//							"ER." + Environment.ENTITY_RELATION_VID_COLUMN + 
-//						" and " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//							"E1." + Environment.ENTITY_ID_COLUMN + 
-//						" and " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + " = " + 
-//							"E2." + Environment.ENTITY_ID_COLUMN + 
+							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN +
+						" from " + R_i + " as ER, " + 
+							Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE, " + 
+							Environment.ENTITY_TABLE + " as E1, " + 
+							Environment.ENTITY_TABLE + " as E2 " +
+						" where " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+							"ER." + Environment.ENTITY_RELATION_VID_COLUMN + 
+						" and " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+							"E1." + Environment.ENTITY_ID_COLUMN + 
+						" and " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + " = " + 
+							"E2." + Environment.ENTITY_ID_COLUMN;  
 //						" and " + "E1." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
-////						" and " + "E2." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
+//						" and " + "E2." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
 //						" group by " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 	
 //							"ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
-//							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN;  
-//					num += stmt.executeUpdate(insertSqlTemp + selectSql);
-//					log.debug("Part 1 of data source " + id + ": " + num);
-//					
-//					id++;
-//				}
-//				id = 1;
-//				num = 0; 
-//				while (id <= 194){
-//					String R_i = R_i_ + id; 
-//					
-//					selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//							"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " + 
-//							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " + 
-//							"E2." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " +  
-//							"E1." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//							"E2." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//							"count(*), " + 
+//							"E1." + Environment.ENTITY_ID_COLUMN;  
+					t11 = System.currentTimeMillis();
+					num += stmt.executeUpdate(insertSqlTemp + selectSql);
+					t12 = System.currentTimeMillis();
+					log.info("SC_temp_" + i + " part 1 of data source " + id + ": " + num + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
+					id++;
+				}
+				id = 1;
+				num = 0; 
+				while (id <= maxDsId){
+					String R_i = R_i_ + id; 
+					
+					selectSql = " select " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
+							"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " + 
+							"E1." + Environment.ENTITY_ID_COLUMN + ", " + 
+							"E2." + Environment.ENTITY_ID_COLUMN + ", " +  
+							"E1." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+							"E2." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
 //							"sum(" + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + ") " +    
-//						" from " + R_i + " as ER, " + 
-//							Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE, " + 
-//							Environment.ENTITY_TABLE + " as E1, " + 
-//							Environment.ENTITY_TABLE + " as E2 " +
-//						" where " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//							"ER." + Environment.ENTITY_RELATION_UID_COLUMN + 
-//						" and " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
-//							"E1." + Environment.ENTITY_ID_COLUMN + 
-//						" and " + "ER." + Environment.ENTITY_RELATION_VID_COLUMN + " = " + 
-//							"E2." + Environment.ENTITY_ID_COLUMN + 
+							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN +
+						" from " + R_i + " as ER, " + 
+							Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE, " + 
+							Environment.ENTITY_TABLE + " as E1, " + 
+							Environment.ENTITY_TABLE + " as E2 " +
+						" where " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+							"ER." + Environment.ENTITY_RELATION_UID_COLUMN + 
+						" and " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + " = " + 
+							"E1." + Environment.ENTITY_ID_COLUMN + 
+						" and " + "ER." + Environment.ENTITY_RELATION_VID_COLUMN + " = " + 
+							"E2." + Environment.ENTITY_ID_COLUMN; 
 //						" and " + "E1." + Environment.ENTITY_DS_ID_COLUMN + " = " + id + 
-////						" and " + "E2." + Environment.ENTITY_DS_ID_COLUMN + " = " + id +
+//						" and " + "E2." + Environment.ENTITY_DS_ID_COLUMN + " = " + id +
 //						" group by " + "KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 	
 //							"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " + 
-//							"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN;  
-//					num += stmt.executeUpdate(insertSqlTemp + selectSql);
-//					log.debug("Part 2 of data source " + id + ": " + num);
-//				
-//					id++;
-//				}
-//				t2 = System.currentTimeMillis();
-//				log.info("temp" + "\t single and compound keywords\t distance: " + i + "\t " + 
-//						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//				selectSql = " select " + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " +
-//					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN + ", " +
-//					Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + ", " + 
-//					Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + ", " +
-//					"sum((" + Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + " + " + 
-//						Environment.KEYWORD_CONCEPT_CONNECTION_FREQ_COLUMN + " * " + compoundKeywordScore +
+//							"E1." + Environment.ENTITY_ID_COLUMN; 
+					t11 = System.currentTimeMillis();
+					num += stmt.executeUpdate(insertSqlTemp + selectSql);
+					t12 = System.currentTimeMillis();
+					log.info("SC_temp_" + i + " part 2 of data source " + id + ": " + num + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
+					
+					id++;
+				}
+				t2 = System.currentTimeMillis();
+				log.info("temp" + "\t single and compound keywords\t distance: " + i + "\t " + 
+						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+				selectSql = " select " + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + ", " +
+					Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + ", " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN + ", " +
+					Environment.KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN + ", " + 
+					Environment.KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN + ", " +
+//					"sum((" + Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + " + " +	compoundKeywordScore +
 //						")/(" + i + "+1)), " +  
-//					Environment.TERM_PAIR_SINGLE_COMPOUND + // single keyword and compound keyword -- keyword id and entity id
-//					" from " + temp_sc + 
-//					" group by " + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
-//						Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " +
-//						Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN;  
-//				t1 = System.currentTimeMillis();
-//				numConnection += stmt.executeUpdate(insertSql + selectSql + onUpdateSql);
-//				t2 = System.currentTimeMillis();
-//				log.info(numConnection + "\t single and compound keywords\t distance: " + i + "\t " + 
-//						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//					
-//				// single keyword and single keyword at distance i
-//				String temp_ss = "temp_table_ss";
-//				if (m_dbService.hasTable(temp_ss)) {
-//					stmt.execute("drop table " + temp_ss);
-//				}
-//				t1 = System.currentTimeMillis();
-//				id = 1;
-//				while (id <= 194){
-//					selectSql = " select " + "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
-//						"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " +
-//						"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
-//						"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN + ", " +
-//						"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + ", " + 
-//						"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + ", " +
+					"(" + Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + " + " +	compoundKeywordScore + 
+						")/(" + i + "+1), " +  
+					Environment.TERM_PAIR_SINGLE_COMPOUND + // single keyword and compound keyword -- keyword id and entity id
+					" from " + temp_sc;
+//					" group by " + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+//						Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + ", " +
+//						Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN;  
+				t1 = System.currentTimeMillis();
+				numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+				t2 = System.currentTimeMillis();
+				log.info(numConnection + "\t single and compound keywords\t distance: " + i + "\t " + 
+						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+					
+				// single keyword and single keyword at distance i
+				t1 = System.currentTimeMillis();
+				id = 1;
+				while (id <= maxDsId){
+					selectSql = " select " + "SC." + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+						"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " +
+						"SC." + Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + ", " + 
+						"SC." + Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN + ", " +
+						"SC." + Environment.KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN + ", " + 
+						"SC." + Environment.KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN + ", " +
 //						"(sum(KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + ") + " + 
-//						 	"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_SCORE_COLUMN + 
+//						 	"SC." + Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + 
 //							")/(" + i + "+1), " +
-//						Environment.TERM_PAIR_SINGLE_SINGLE + // single keyword and single keyword -- keyword id and keyword id
-//						" from " + temp_sc + " as SC, " + 
-//							Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE " +
-//						" where " + "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + " = " + 
-//							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + 
-//						" and " + "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + " < " + 
-//							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + 
-//						" and " +  "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_DS_UID_COLUMN + " = " + id + 
-////						" and " +  "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_DS_VID_COLUMN + " = " + id + 
-//						" group by " + "SC." + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
+						"(KE." + Environment.KEYWORD_ENTITY_INCLUSION_SCORE_COLUMN + " + " + 
+					 		"SC." + Environment.KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN + 
+					 		")/(" + i + "+1), " +
+						Environment.TERM_PAIR_SINGLE_SINGLE + // single keyword and single keyword -- keyword id and keyword id
+						" from " + temp_sc + " as SC, " + 
+							Environment.KEYWORD_ENTITY_INCLUSION_TABLE + " as KE " +
+						" where " + "SC." + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + " = " + 
+							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_ENTITY_ID_COLUMN + 
+						" and " + "SC." + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + " < " + 
+							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + 
+						" and " +  "SC." + Environment.KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN + " = " + id;
+//						" and " +  "SC." + Environment.KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN + " = " + id + 
+//						" group by " + "SC." + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " + 
 //							"KE." + Environment.KEYWORD_ENTITY_INCLUSION_KEYWORD_ID_COLUMN + ", " + 
-//							"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN + ", " + 
-//							"SC." + Environment.KEYWORD_CONCEPT_CONNECTION_CONCEPT_VID_COLUMN;  
-//					numConnection += stmt.executeUpdate(insertSql + selectSql + onUpdateSql);
-//					
-//					id++;
-//				}
-//				
-//				if (m_dbService.hasTable(temp_sc)) {
-//					stmt.execute("drop table " + temp_sc);
-//				}
-//				t2 = System.currentTimeMillis();
-//				log.info(numConnection + "\t single and single keywords\t distance: " + i + "\t " + 
-//						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//				
-//				// compound keyword and compound keyword at distance i  
-//				t1 = System.currentTimeMillis();
-//				id = 1;
-//				while (id <= 194){
-//					String R_i = R_i_ + id;
-//					selectSql = " select " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " +
-//						"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " +
-//						"E1." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " + 
-//						"E2." + Environment.ENTITY_CONCEPT_ID_COLUMN + ", " +  
-//						"E1." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//						"E2." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
-//						"(" + "2*" + compoundKeywordScore + ")/(" + i + "+1), " + 
-//						Environment.TERM_PAIR_COMPOUND_COMPOUND + // compound keyword and compound keyword -- entity id and entity id 
-//						" from " + R_i + " as ER, " +	 	
-//							Environment.ENTITY_TABLE + " as E1, " + 
-//							Environment.ENTITY_TABLE + " as E2 " +
-//						" where " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + " = " + 
-//							"E1." + Environment.ENTITY_ID_COLUMN + 
-//						" and " + "ER." + Environment.ENTITY_RELATION_VID_COLUMN + " = " + 
-//							"E2." + Environment.ENTITY_ID_COLUMN; 
-////						" group by " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
-////							"ER." + Environment.ENTITY_RELATION_VID_COLUMN;
-//					numConnection += stmt.executeUpdate(insertSql + selectSql + onUpdateSql);
-//					
-//					id++;
-//				}
-//				
-//				t2 = System.currentTimeMillis();
-//				log.info(numConnection + "\tcompound and compound keywords\tdistance: " + i + "\t " + 
-//						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
-//			}
-//			
-//			stmt.execute("alter table " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + 
-//					" DROP PRIMARY KEY");
-//			stmt.execute("alter table " + Environment.KEYWORD_CONCEPT_CONNECTION_TABLE + 
-//					" add index (" + Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN + ", " +
-//									Environment.KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN + ", " +
-//									Environment.KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN + ")");
-//			
-//			if(stmt != null)
-//            	stmt.close();
-//            
-//            long end = System.currentTimeMillis();
-//			log.info("Time for Creating Keyword Concept Connection Table: " + 
-//					(double)(end - start)/(double)1000 + "(sec)\n");
-//		} catch (SQLException ex) {
-//			log.warn("A warning in the process of creating keyword concept connection table:");
-//			log.warn(ex.getMessage());
-//		} 
-//	} 
+//							"SC." + Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN + ", " + 
+//							"SC." + Environment.KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN;  
+					t11 = System.currentTimeMillis();
+					numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+					t12 = System.currentTimeMillis();
+					log.info("SS_" + i + " data source " + id + ": " + numConnection + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
+					
+					id++;
+				}
+				
+				if (m_dbService.hasTable(temp_sc)) {
+					stmt.execute("drop table " + temp_sc);
+				}
+				t2 = System.currentTimeMillis();
+				log.info(numConnection + "\t single and single keywords\t distance: " + i + "\t " + 
+						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+				
+				// compound keyword and compound keyword at distance i  
+				t1 = System.currentTimeMillis();
+				id = 1;
+				while (id <= maxDsId){
+					String R_i = R_i_ + id;
+					selectSql = " select " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " +
+						"ER." + Environment.ENTITY_RELATION_VID_COLUMN + ", " +
+						"E1." + Environment.ENTITY_ID_COLUMN + ", " + 
+						"E2." + Environment.ENTITY_ID_COLUMN + ", " +  
+						"E1." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+						"E2." + Environment.ENTITY_DS_ID_COLUMN + ", " + 
+						"(" + "2*" + compoundKeywordScore + ")/(" + i + "+1), " + 
+						Environment.TERM_PAIR_COMPOUND_COMPOUND + // compound keyword and compound keyword -- entity id and entity id 
+						" from " + R_i + " as ER, " +	 	
+							Environment.ENTITY_TABLE + " as E1, " + 
+							Environment.ENTITY_TABLE + " as E2 " +
+						" where " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + " = " + 
+							"E1." + Environment.ENTITY_ID_COLUMN + 
+						" and " + "ER." + Environment.ENTITY_RELATION_VID_COLUMN + " = " + 
+							"E2." + Environment.ENTITY_ID_COLUMN; 
+//						" group by " + "ER." + Environment.ENTITY_RELATION_UID_COLUMN + ", " + 
+//							"ER." + Environment.ENTITY_RELATION_VID_COLUMN;
+					t11 = System.currentTimeMillis();
+					numConnection += stmt.executeUpdate(insertIgnoreSql + selectSql);
+					t12 = System.currentTimeMillis();
+					log.info("CC_" + i + " data source " + id + ": " + numConnection + "\t " + 
+							"time: " + (double)(t12 - t11)/(double)60000 + "(min)");
+					m_timing.add(id, t12 - t11);
+					
+					id++;
+				}
+				
+				t2 = System.currentTimeMillis();
+				log.info(numConnection + "\tcompound and compound keywords\tdistance: " + i + "\t " + 
+						"time: " + (double)(t2 - t1)/(double)1000 + "(sec)");
+			}
+			
+			stmt.execute("alter table " + Environment.KEYWORD_ENTITY_CONNECTION_TABLE + 
+					" DROP PRIMARY KEY");
+			stmt.execute("alter table " + Environment.KEYWORD_ENTITY_CONNECTION_TABLE + 
+					" add index (" + Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN + ", " +
+									Environment.KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN + ", " +
+									Environment.KEYWORD_ENTITY_CONNECTION_TYPE_COLUMN + ")");
+			
+			if(stmt != null)
+            	stmt.close();
+            
+            long end = System.currentTimeMillis();
+			log.info("Time for Creating Keyword Concept Connection Table: " + 
+					(double)(end - start)/(double)1000 + "(sec)\n");
+		} catch (SQLException ex) {
+			log.warn("A warning in the process of creating keyword concept connection table:");
+			log.warn(ex.getMessage() + "\n");
+		} 
+	} 
 	
 	private int getMaxEntityId() {
 		int maxEntityId = 0;
@@ -1738,7 +1942,7 @@ public class DBIndexService {
 		return maxEntityId;
 	}
 	
-	private int getMaxDataSourceId() {
+	private int getMaxDsId() {
 		int maxDsId = 0;
 		if (!m_dbService.hasTable(Environment.DATASOURCE_TABLE)) 
 			return maxDsId;
@@ -1757,10 +1961,10 @@ public class DBIndexService {
 			e.printStackTrace();
 		}
 		
-		return maxDsId;
+		return Environment.THRESHOLD_DS_NUM;
 	}
 	
-	private Collection<String> getAllowedDataSources() {
+	private Collection<String> getAllowedDs() {
 		String dsFile = m_config.getDsFile();
 		int fromDsNum = m_config.getDsFromNum();
 		int endDsNum = m_config.getDsEndNum();
@@ -1813,7 +2017,7 @@ public class DBIndexService {
 			br.close();
 		} catch (Exception ex) {
 			log.warn("Exception in readStopWords method:");
-			log.warn(ex.getMessage());
+			log.warn(ex.getMessage() + "\n");
 		}
 		return stopwords;
 	}
@@ -1840,15 +2044,85 @@ public class DBIndexService {
     private boolean isdigit(char x) {
         return x >= '0' && x <= '9';
     }
-
-    public boolean containsDigit(String str) {
-		char[] chs = str.toCharArray();
+    
+    public int getTermType(String str) {
+    	boolean isAlpha = false;
+    	boolean isDigit = false;
+    	char[] chs = str.toCharArray();
 		for (int i = 0; i < chs.length; i++) {
-			if (Character.isDigit(chs[i])) {
+			if(isalpha(chs[i])) {
+				isAlpha = true;
+			}
+			else if(isdigit(chs[i])) {
+				isDigit = true;
+			}
+			else
+				return Environment.TERM_INVALID;
+		}
+		
+		if(isAlpha == true && isDigit == true)
+			return Environment.TERM_DIGIT_ALPHA;
+		else if(isAlpha == true)
+			return Environment.TERM_ALPHA;
+		else if(isDigit == true)
+			return Environment.TERM_DIGIT;
+		else
+			return Environment.TERM_INVALID;
+    }
+    
+	 public boolean toProcess(String str) {
+		boolean hasDigit = false;
+		char[] chs = str.toCharArray();
+		char[] prefix1 = new char[] { '1', '9', '9' };
+		char[] prefix2 = new char[] { '2', '0', '0' };
+		char[] prefixDigit = new char[3];
+		int idx = 0;
+		for (int i = 0; i < chs.length; i++) {
+			if (isalpha(chs[i])) {
+				if (idx > 0) {
+					return false;
+				}
+			} else if (isdigit(chs[i])) {
+				if (idx < 3
+						&& (prefix1[idx] == chs[i] || prefix2[idx] == chs[i])) {
+					prefixDigit[idx] = chs[i];
+					idx++;
+				} else if (idx == 3) {
+					idx++;
+				} else {
+					return false;
+				}
+				hasDigit = true;
+			} else
+				return false;
+		}
+
+		if (hasDigit == false)
+			return true;
+		else if (idx == 4 && (Arrays.equals(prefixDigit, prefix1) || Arrays.equals(prefixDigit, prefix2))) {
+			return true;
+		} else
+			return false;
+	}
+    
+    public boolean containsInvalidChar(String str) {
+    	char[] chs = str.toCharArray();
+		for (int i = 0; i < chs.length; i++) {
+			if (!isdigit(chs[i]) && !isalpha(chs[i])) {
 				return true;
 			}
 		}
 		return false;
+    }
+
+    public boolean containsOnlyDigit(String str) {
+		char[] chs = str.toCharArray();
+		for (int i = 0; i < chs.length; i++) {
+			if (!isdigit(chs[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
     
     public boolean containsOnlyLetters(String str) {
@@ -1907,9 +2181,9 @@ public class DBIndexService {
 				ps.executeUpdate();
 			} catch (SQLException ex) {
 //				log.warn("A warning in the process of importing triple into triple table:");
-//				log.warn(ex.getMessage());
+//				log.warn(ex.getMessage() + "\n");
 				log.debug("A warning in the process of importing triple into triple table:");
-				log.debug(ex.getMessage());
+				log.debug(ex.getMessage() + "\n");
 			}
 		}
 		
@@ -1919,7 +2193,7 @@ public class DBIndexService {
 					ps.close();
 			} catch (SQLException ex) {
 				log.warn("A warning in the process of closing prepared statement in DbTripleSink:");
-				log.warn(ex.getMessage());
+				log.warn(ex.getMessage() + "\n");
 			}
 		}
 	}

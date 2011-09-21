@@ -16,7 +16,10 @@ public class Environment {
 	public static final int TOP_CLASS = 4;
 	public static final int ENTITY_MEMBERSHIP_PROPERTY = 5;
 	public static final int RDFS_PROPERTY = 6;
+
+	public static final int THRESHOLD_DS_NUM = 156;
 	
+	public static final int THRESHOLD_KEYWORD_FREQ = 65535;
 	
 	/* Top Concept */
 	public static final String THING = "http://www.w3.org/2002/07/owl#Thing"; 
@@ -39,7 +42,7 @@ public class Environment {
 	public static final String DEFAULT_DATABASE_NAME = "dbsqr";
 	
 	/* Default configuration information */
-	public static final int DEFAULT_MAX_DISTANCE = 3;
+	public static final int DEFAULT_MAX_DISTANCE = 4;
 	public static final int DEFAULT_TOP_KEYWORD = 4;
 	public static final int DEFAULT_TOP_DATABASE = 4;
 	public static final String DEFAULT_STOPWORD_FILEPATH = "stop_words.txt"; 
@@ -66,6 +69,10 @@ public class Environment {
 	/* Types of keywords */
 	public static final int TERM_SINGLE = 0; 
 	public static final int TERM_COMPOUND = 1;
+	public static final int TERM_DIGIT = 2;
+	public static final int TERM_ALPHA = 3;
+	public static final int TERM_DIGIT_ALPHA = 4;
+	public static final int TERM_INVALID = 5;
 	 
 	/* Types of keyword pairs */
 	public static final int TERM_PAIR_SINGLE_SINGLE = 0;
@@ -152,21 +159,28 @@ public class Environment {
 	public static final String COMPLETE_SCORE_COLUMN = "comp_score";		// column 4
 	public static final String COMPLETE_FREQ_COLUMN = "comp_freq";			// column 5
 	
+	// Keyword data source inclusion table
+	public static final String KEYWORD_DS_INCLUSION_TABLE = "keyw_ds_incl_table";	
+	public static final String KEYWORD_DS_INCLUSION_KEYWORD_ID_COLUMN = "ks_incl_keyw_id";	// column 1	
+	public static final String KEYWORD_DS_INCLUSION_DS_ID_COLUMN = "ks_incl_ds_id";			// column 2
+	public static final String KEYWORD_DS_INCLUSION_SCORE_COLUMN = "ks_incl_score"; 		// column 3
+	public static final String KEXWORD_DS_INCLUSION_TYPE_COLUMN = "ks_incl_type"; 			// column 4	
+	
 	// Keyword entity connection table
-	public static final String KEYWORD_ENTITY_CONNECTION_TABLE = "keyw_entity_conn_table";	
+	public static final String KEYWORD_ENTITY_CONNECTION_TABLE = "keyw_entity_conn_table_0";	
 	public static final String KEYWORD_ENTITY_CONNECTION_KEYWORD_UID_COLUMN = "entity_conn_keyw_uid";		// column 1	
 	public static final String KEYWORD_ENTITY_CONNECTION_KEYWORD_VID_COLUMN = "entity_conn_keyw_vid";		// column 2	
 	public static final String KEYWORD_ENTITY_CONNECTION_ENTITY_UID_COLUMN = "entity_conn_entity_uid";		// column 3
 	public static final String KEYWORD_ENTITY_CONNECTION_ENTITY_VID_COLUMN = "entity_conn_entity_vid";		// column 4
-	public static final String KEYWORD_ENTITY_CONNECTION_CONCEPT_UID_COLUMN = "entity_conn_concept_uid"; 	// column 5
-	public static final String KEYWORD_ENTITY_CONNECTION_CONCEPT_VID_COLUMN = "entity_conn_concept_vid"; 	// column 5
 	public static final String KEYWORD_ENTITY_CONNECTION_DS_UID_COLUMN = "entity_conn_ds_uid"; 				// column 5
-	public static final String KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN = "entity_conn_ds_vid"; 				// column 5
-	public static final String KEYWORD_ENTITY_CONNECTION_DISTANCE = "entity_conn_dis";						// column 5
-	public static final String KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN = "entity_conn_score"; 				// column 6
+	public static final String KEYWORD_ENTITY_CONNECTION_DS_VID_COLUMN = "entity_conn_ds_vid"; 				// column 6
+	public static final String KEYWORD_ENTITY_CONNECTION_DISTANCE = "entity_conn_dis";						// column 7
+	public static final String KEYWORD_ENTITY_CONNECTION_SCORE_COLUMN = "entity_conn_score"; 				// column 8
+	public static final String KEYWORD_ENTITY_CONNECTION_TYPE_COLUMN = "entity_conn_type";					// column 9
+	public static final String KEYWORD_ENTITY_CONNECTION_FREQ_COLUMN = "entity_conn_freq";					// column 10
 	
 	// Keyword concept connection table
-	public static final String KEYWORD_CONCEPT_CONNECTION_TABLE = "keyw_concept_conn_table";	
+	public static final String KEYWORD_CONCEPT_CONNECTION_TABLE = "keyw_concept_conn_table_4";	
 	public static final String KEYWORD_CONCEPT_CONNECTION_KEYWORD_UID_COLUMN = "concept_conn_keyw_uid";		// column 1	
 	public static final String KEYWORD_CONCEPT_CONNECTION_KEYWORD_VID_COLUMN = "concept_conn_keyw_vid";		// column 2	
 	public static final String KEYWORD_CONCEPT_CONNECTION_CONCEPT_UID_COLUMN = "concept_conn_concept_uid";	// column 3
@@ -178,8 +192,16 @@ public class Environment {
 	public static final String KEYWORD_CONCEPT_CONNECTION_TYPE_COLUMN = "concept_conn_type";				// column 9
 	public static final String KEYWORD_CONCEPT_CONNECTION_FREQ_COLUMN = "concept_conn_freq";				// column 10
 	
-	public static final String KEYWORD_CONCEPT_CONNECTION_ENTITY_UID_COLUMN = "concept_conn_entity_uid";
-	public static final String KEYWORD_CONCEPT_CONNECTION_ENTITY_VID_COLUMN = "concept_conn_entity_vid";
+	// Keyword data source connection table
+	public static final String KEYWORD_DS_CONNECTION_TABLE = "keyw_ds_conn_table_2";	
+	public static final String KEYWORD_DS_CONNECTION_KEYWORD_UID_COLUMN = "ds_conn_keyw_uid";		// column 1	
+	public static final String KEYWORD_DS_CONNECTION_KEYWORD_VID_COLUMN = "ds_conn_keyw_vid";		// column 2	
+	public static final String KEYWORD_DS_CONNECTION_DS_UID_COLUMN = "ds_conn_ds_uid";				// column 3
+	public static final String KEYWORD_DS_CONNECTION_DS_VID_COLUMN = "ds_conn_ds_vid";				// column 4
+	public static final String KEYWORD_DS_CONNECTION_DISTANCE = "ds_conn_dis";						// column 5
+	public static final String KEYWORD_DS_CONNECTION_SCORE_COLUMN = "ds_conn_score"; 				// column 6
+	public static final String KEYWORD_DS_CONNECTION_TYPE_COLUMN = "ds_conn_type";					// column 7
+	public static final String KEYWORD_DS_CONNECTION_FREQ_COLUMN = "ds_conn_freq";					// column 8
 	
 	
 }
