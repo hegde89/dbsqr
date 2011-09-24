@@ -17,6 +17,5 @@
 	<classpathentry kind="lib" path="lib/nxparser-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="src" path="eva"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Jena_2.6.0"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
